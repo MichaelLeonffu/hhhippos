@@ -1,5 +1,29 @@
-const app = new PIXI.Application({ backgroundColor: 0x1099bb });
+const app = new PIXI.Application({
+	// backgroundColor: 0x1099bb,
+	backgroundColor: 0x6ee0ff,
+	height: 600 + 200,
+	width: 800 + 0
+});
 document.body.appendChild(app.view);
+
+
+
+
+// Initialize the pixi Graphics class
+circle = new PIXI.Graphics();
+
+circle.beginFill(0xe74c3c); // Red
+
+// Draw a circle
+circle.drawCircle(app.screen.width/2, app.screen.height/2, 400); // drawCircle(x, y, radius)
+circle.endFill();
+
+circle.beginFill(0x6ee0ff); // Blue
+circle.drawCircle(app.screen.width/2, app.screen.height/2, 350);
+
+// Add child
+app.stage.addChild(circle);
+
 
 // create a texture from an image path
 const texture = PIXI.Texture.from('images/zerotwosmall.png');
@@ -9,26 +33,62 @@ const textureVector = PIXI.Texture.from('images/arrow.png');
 texture.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
 textureVector.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
 
+// Asume that height and width are the same
+arrowOGSize = textureVector.frame.height;
+arrowOGSize = 1600
 
-baseScale = 0.05
-minScale = 0.03
-maxScale = 0.08
+// The size we want the texutre to be (assume square)
+// Unit size
+perPix = 50
 
-perPix = 100
-baseScale = 0.05
+// This is also the bigest size
+arrowFinalSizeMax = perPix;
+arrowFinalSizeMin = 10;
+
+// In terms of scale
+maxScale = arrowFinalSizeMax/arrowOGSize
+minScale = arrowFinalSizeMin/arrowOGSize
+
+// console.log("max", maxScale)
+// console.log("min", minScale)
+// console.log("og", arrowOGSize)
 
 vectorField = []
+
+// To know the center cordinate
+halfi = (app.screen.width/perPix)/2 - 0.5
+halfj = (app.screen.height/perPix)/2 - 0.5
 
 for(let i = 0; i < app.screen.width/perPix; i++){
 	vectorField[i] = []
 	for(let j = 0; j < app.screen.height/perPix; j++){
 		// vectorField[i][j] = createVector(i*perPix+50, j*perPix+50, Math.PI/8 *(i+j), 0.75);
+
+		// Cords
+		x = i*perPix+perPix/2;
+		y = j*perPix+perPix/2;
+
+		// Mag
+		dx = x - app.screen.width/2;
+		dy = y - app.screen.height/2;
+
+		hyp = Math.sqrt(dx*dx+dy*dy);
+
+		if(hyp < 340)
+			mag = 0.25;
+		else if(hyp < 400)
+			mag = 1;
+		else
+			mag = 0;
+
+
 		vectorField[i][j] = createVector(
-			i*perPix+50,
-			j*perPix+50,
-			6*Math.PI/4 + Math.atan((j-2.5)/(i-3.5)) + ((i-3.5) < 0 ? Math.PI : 0),
+			x,
+			y,
+			6*Math.PI/4 + Math.atan((j-halfj)/(i-halfi)) + ((i-halfi) < 0 ? Math.PI : 0),
 			// (Math.abs((j-2.5)/6)+Math.abs((i-3.5)/8))
-			0.75
+			// 0.25
+			mag
 		);
 		// vectorField[i][j] = createVector(
 		// 	i*perPix+50,
@@ -62,19 +122,12 @@ app.stage.addChild(zeroTwo);
 console.log(vectorField.length)
 console.log(vectorField[0].length)
 
-counter = 0
-slow = 1
+vfwidth = vectorField.length
+vfheight = vectorField[0].length
 
 // Ticks
 app.ticker.add((delta) => {
 
-	// return
-
-	counter++;
-	if(false || counter < slow)
-		return
-	
-	counter = 0
 
 	// delta *= 1
 
@@ -84,36 +137,36 @@ app.ticker.add((delta) => {
 
 	// Check for new acceleration in vector field
 
-	x = Math.floor(zeroTwo.x/100)
-	y = Math.floor(zeroTwo.y/100)
+	x = Math.floor(zeroTwo.x/perPix)
+	y = Math.floor(zeroTwo.y/perPix)
 
-	// Always posative
-	dx = zeroTwo.x/100 - x;
-	dy = zeroTwo.y/100 - y;
-
-	// console.log(zeroTwo.x, zeroTwo.y)
-	// console.log(x, y)
+	// Always posative (0 to 1)
+	dx = zeroTwo.x/perPix - x;
+	dy = zeroTwo.y/perPix - y;
 
 	vect = vectorField[x][y]
 	// console.log("testing", vect.myScale)
 	// console.log("test", vect.rotation)
 
-	vect1 = vectorField[(x+0)%7][(y+0)%5];
-	vect2 = vectorField[(x+1)%7][(y+0)%5];
-	vect3 = vectorField[(x+0)%7][(y+1)%5];
-	vect4 = vectorField[(x+1)%7][(y+1)%5];
+	// Get 4 near nodes
+	vect1 = vectorField[(x+0)%(vfwidth-1)][(y+0)%(vfheight-1)];
+	vect2 = vectorField[(x+1)%(vfwidth-1)][(y+0)%(vfheight-1)];
+	vect3 = vectorField[(x+0)%(vfwidth-1)][(y+1)%(vfheight-1)];
+	vect4 = vectorField[(x+1)%(vfwidth-1)][(y+1)%(vfheight-1)];
 
-	mag1 = (vect1.myScale - minScale)/(maxScale - minScale);
-	mag2 = (vect2.myScale - minScale)/(maxScale - minScale);
-	mag3 = (vect3.myScale - minScale)/(maxScale - minScale);
-	mag4 = (vect4.myScale - minScale)/(maxScale - minScale);
+	// Copy their values
+	mag1 = vect1.myMag;
+	mag2 = vect2.myMag;
+	mag3 = vect3.myMag;
+	mag4 = vect4.myMag;
 
+	// Weigh their values
 	mag1 *= (1-dx + 1-dy)/2;
 	mag2 *= (  dx + 1-dy)/2;
 	mag3 *= (1-dx +   dy)/2;
 	mag4 *= (  dx +   dy)/2;
 
-
+	// Vector addition
 	magx = Math.cos(vect1.rotation - Math.PI/2) * mag1 +
 		Math.cos(vect2.rotation - Math.PI/2) * mag2 +
 		Math.cos(vect3.rotation - Math.PI/2) * mag3 +
@@ -125,7 +178,7 @@ app.ticker.add((delta) => {
 		Math.sin(vect4.rotation - Math.PI/2) * mag4;
 
 
-	mag = (vect.myScale - minScale)/(maxScale - minScale)
+	mag = vect.myMag
 	// mag = Math.sqrt(magx*magx+magy*magy);
 	rot = Math.PI/2 +
 		Math.atan(magy/magx) +
@@ -135,29 +188,51 @@ app.ticker.add((delta) => {
 	zeroTwo.acceleration.y = Math.sin(rot - Math.PI/2) * mag
 
 	// Fix the edge cases
-	// if(x+1 >= 8)
+	// if(x+1 >= vfwidth)
 		zeroTwo.acceleration.x = Math.cos(vect.rotation - Math.PI/2) * mag //* 0.1
-	// if(y+1 >= 6)
+	// if(y+1 >= vfheight)
 		zeroTwo.acceleration.y = Math.sin(vect.rotation - Math.PI/2) * mag //* 0.1
-	
+
+	zeroTwo.speed.r = Math.sqrt(zeroTwo.speed.x*zeroTwo.speed.x+zeroTwo.speed.y*zeroTwo.speed.y);
+
+
+	// Air resistance only if above certain speed
+	airResist = 0.005
+	if(zeroTwo.speed.r >= 0.1 && false){
+		zeroTwo.acceleration.x -= Math.cos(zeroTwo.rotation - Math.PI/2) * airResist * zeroTwo.speed.r;
+		zeroTwo.acceleration.y -= Math.sin(zeroTwo.rotation - Math.PI/2) * airResist * zeroTwo.speed.r;
+	}
+
 
 	// zeroTwo.acceleration.x = 0.02
 	// zeroTwo.acceleration.y = 0.02
 
 	// Update speed
-	speedLimit = 10
 	zeroTwo.speed.x += zeroTwo.acceleration.x * delta
 	zeroTwo.speed.y += zeroTwo.acceleration.y * delta
 
-
+	// Speed limit
+	speedLimit = 10
 	zeroTwo.speed.x = Math.sign(zeroTwo.speed.x) * Math.min(speedLimit, Math.abs(zeroTwo.speed.x))
 	zeroTwo.speed.y = Math.sign(zeroTwo.speed.y) * Math.min(speedLimit, Math.abs(zeroTwo.speed.y))
 
+	// Speed minimun (if too slow then stop)
+	if(zeroTwo.speed.r < 0.01){
+		console.log("stoped")
+		zeroTwo.speed.x = 0
+		zeroTwo.speed.y = 0
+	}
+
 	// Update angle with speed
-	zeroTwo.rotation =
+	newRot =
 		Math.PI/2 +
 		Math.atan(zeroTwo.speed.y/zeroTwo.speed.x) +
 		(zeroTwo.speed.x < 0 ? Math.PI : 0);
+
+	// If the speed is 0 then newRot is NaN
+	// We want to keep the pervious direction
+	if(! isNaN(newRot))
+		zeroTwo.rotation = newRot
 
 	// Update position
 	zeroTwo.x += zeroTwo.speed.x * delta
@@ -199,8 +274,8 @@ function createVector(x, y, d, m) {
 	vect.anchor.set(0.5);
 
 	// set the d and m
-	vect.scale.set((maxScale - minScale) * m);
-	vect.myScale = (maxScale - minScale) * m
+	vect.myMag = m;
+	vect.scale.set((maxScale - minScale) * m + minScale);
 	vect.rotation = d;
 
 
@@ -254,17 +329,17 @@ function onDragMove() {
 			(dx < 0 ? Math.PI : 0);		// If it is the special case fix it
 
 		// Magnitude (distance)
-		distanceInPixFromCenter = 25;
 		hyp = Math.sqrt(dx*dx+dy*dy);
 
-		offset = (hyp - distanceInPixFromCenter)/500
+		// Calcuate the Percent magnitude
+		newScale = (hyp - arrowFinalSizeMin/2)/(arrowFinalSizeMax - arrowFinalSizeMin/2)
 
-		newScale = offset + baseScale;
-		newScale = Math.min(newScale, maxScale);
-		newScale = Math.max(newScale, minScale);
+		newScale = Math.min(newScale, 1);	// 100%
+		newScale = Math.max(newScale, 0);	// 0%
 
-		this.myScale = newScale
-		this.scale.set(newScale)
+		this.myMag = newScale;
+		// console.log("SET to:", (maxScale - minScale) * newScale + minScale)
+		this.scale.set((maxScale - minScale) * newScale + minScale);
 
 	}
 }
