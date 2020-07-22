@@ -26,8 +26,12 @@ app.stage.addChild(circle);
 
 
 // create a texture from an image path
-const texture = PIXI.Texture.from('images/zerotwosmall.png');
+const texture = PIXI.Texture.from('images/coin2.png');
 const textureVector = PIXI.Texture.from('images/arrow.png');
+const Ytext = PIXI.Texture.from('images/hippoY.png');
+const Rtext = PIXI.Texture.from('images/hippoR.png');
+const Gtext = PIXI.Texture.from('images/hippoG.png');
+const Btext = PIXI.Texture.from('images/hippoB.png');
 
 // Scale mode for pixelation
 texture.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
@@ -116,8 +120,99 @@ zeroTwo.speed.y = 7
 zeroTwo.speed.x = 5
 
 
+//// Make hippos
+const hippoY = new PIXI.Sprite(Ytext);
+const hippoR = new PIXI.Sprite(Rtext);
+const hippoG = new PIXI.Sprite(Gtext);
+const hippoB = new PIXI.Sprite(Btext);
+
+
+// Center and make it smaller
+zeroTwo.scale.set(0.3);
+zeroTwo.anchor.set(0.5);
+
+hippoY.scale.set(0.5);
+hippoR.scale.set(0.5);
+hippoG.scale.set(0.5);
+hippoB.scale.set(0.5);
+
+// Place 
+zeroTwo.x = app.screen.width / 2 * 0.85;
+zeroTwo.y = app.screen.height / 2;
+
+hippoY.x = app.screen.width / 2 * 0.85 + 330;
+hippoY.y = app.screen.height / 2 - 60;
+
+hippoR.x = app.screen.width / 2 * 0.85;
+hippoR.y = app.screen.height / 2 - 510;
+
+hippoG.x = app.screen.width / 2 * 0.85 - 450;
+hippoG.y = app.screen.height / 2 - 60;
+
+hippoB.x = app.screen.width / 2 * 0.85;
+hippoB.y = app.screen.height / 2 + 270;
+
+
 // Add it to the game
 app.stage.addChild(zeroTwo);
+
+app.stage.addChild(hippoY);
+app.stage.addChild(hippoR);
+app.stage.addChild(hippoG);
+app.stage.addChild(hippoB);
+
+
+///////
+//Capture the keyboard arrow keys
+
+  var left = keyboard(37),
+      up = keyboard(38),
+      right = keyboard(39),
+      down = keyboard(40);
+
+  //Left arrow key `press` method
+  left.press = function () {
+	hippoG.x = app.screen.width / 2 * 0.85 - 400;
+	hippoG.y = app.screen.height / 2 - 60;
+  };
+
+  //Left arrow key `release` method
+  left.release = function () {
+	hippoG.x = app.screen.width / 2 * 0.85 - 450;
+	hippoG.y = app.screen.height / 2 - 60;
+  };
+
+  //Up
+  up.press = function () {
+    hippoR.x = app.screen.width / 2 * 0.85;
+	hippoR.y = app.screen.height / 2 - 460;
+  };
+  up.release = function () {
+    hippoR.x = app.screen.width / 2 * 0.85;
+	hippoR.y = app.screen.height / 2 - 510;
+  };
+
+  //Right
+  right.press = function () {
+    hippoY.x = app.screen.width / 2 * 0.85 + 280;
+	hippoY.y = app.screen.height / 2 - 60;
+  };
+  right.release = function () {
+    hippoY.x = app.screen.width / 2 * 0.85 + 330;
+	hippoY.y = app.screen.height / 2 - 60;
+  };
+
+  //Down
+  down.press = function () {
+    hippoB.x = app.screen.width / 2 * 0.85;
+	hippoB.y = app.screen.height / 2 + 220;
+  };
+  down.release = function () {
+    hippoB.x = app.screen.width / 2 * 0.85;
+	hippoB.y = app.screen.height / 2 + 270;
+  };
+
+//////
 
 console.log(vectorField.length)
 console.log(vectorField[0].length)
@@ -143,6 +238,22 @@ app.ticker.add((delta) => {
 	// Always posative (0 to 1)
 	dx = zeroTwo.x/perPix - x;
 	dy = zeroTwo.y/perPix - y;
+	
+	////when BUTTON DOWN FOR HIPPOS
+	//adjust by 50px
+	/*
+	hippoY.x = app.screen.width / 2 * 0.85 + 280;
+	hippoY.y = app.screen.height / 2 - 60;
+
+	hippoR.x = app.screen.width / 2 * 0.85;
+	hippoR.y = app.screen.height / 2 - 460;
+
+	hippoG.x = app.screen.width / 2 * 0.85 - 400;
+	hippoG.y = app.screen.height / 2 - 60;
+
+	hippoB.x = app.screen.width / 2 * 0.85;
+	hippoB.y = app.screen.height / 2 + 220;
+	*/
 
 	vect = vectorField[x][y]
 	// console.log("testing", vect.myScale)
@@ -342,4 +453,42 @@ function onDragMove() {
 		this.scale.set((maxScale - minScale) * newScale + minScale);
 
 	}
+}
+
+
+//KEYBOARD FUNCTIONS
+//The `keyboard` helper function
+function keyboard(keyCode) {
+  var key = {};
+  key.code = keyCode;
+  key.isDown = false;
+  key.isUp = true;
+  key.press = undefined;
+  key.release = undefined;
+  //The `downHandler`
+  key.downHandler = function (event) {
+    if (event.keyCode === key.code) {
+      if (key.isUp && key.press) key.press();
+      key.isDown = true;
+      key.isUp = false;
+    }
+    event.preventDefault();
+  };
+
+  //The `upHandler`
+  key.upHandler = function (event) {
+    if (event.keyCode === key.code) {
+      if (key.isDown && key.release) key.release();
+      key.isDown = false;
+      key.isUp = true;
+    }
+    event.preventDefault();
+  };
+
+  //Attach event listeners
+  window.addEventListener("keydown", key.downHandler.bind(key), false);
+  window.addEventListener("keyup", key.upHandler.bind(key), false);
+
+  //Return the key object
+  return key;
 }
