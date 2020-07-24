@@ -28,10 +28,7 @@ app.stage.addChild(circle);
 // create a texture from an image path
 const texture = PIXI.Texture.from('images/coin2.png');
 const textureVector = PIXI.Texture.from('images/arrow.png');
-const Ytext = PIXI.Texture.from('images/hippoY.png');
-const Rtext = PIXI.Texture.from('images/hippoR.png');
-const Gtext = PIXI.Texture.from('images/hippoG.png');
-const Btext = PIXI.Texture.from('images/hippoB.png');
+
 
 // Scale mode for pixelation
 texture.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
@@ -103,114 +100,124 @@ for(let i = 0; i < app.screen.width/perPix; i++){
 	}
 }
 
-// Make a zero two
-const zeroTwo = new PIXI.Sprite(texture);
+coin = [];
+for(let i=0;i<20;i++){
+	
+	// Make a zero two
+	coin[i] = new PIXI.Sprite(texture);
 
-// Center and make it smaller
-zeroTwo.scale.set(0.3);
-zeroTwo.anchor.set(0.5);
+	// Center and make it smaller
+	coin[i].scale.set(0.3);
+	coin[i].anchor.set(0.5);
 
-// Place her in the center
-zeroTwo.x = app.screen.width / 2 * 0.80;
-zeroTwo.y = app.screen.height / 2;
+	// Place her in the center
+	coin[i].x = app.screen.width / 2 * 0.80;
+	coin[i].y = app.screen.height / 2;
 
-zeroTwo.acceleration = new PIXI.Point(0);
-zeroTwo.speed = new PIXI.Point(0);
-zeroTwo.speed.y = 7
-zeroTwo.speed.x = 5
+	coin[i].acceleration = new PIXI.Point(0);
+	coin[i].speed = new PIXI.Point(0);
+	coin[i].speed.y = Math.random() * 40 - 20; 
+	coin[i].speed.x = Math.random() * 40 - 20;
 
+	// Center and make it smaller
+	coin[i].scale.set(0.3);
+	coin[i].anchor.set(0.5);
 
+	// Place 
+	coin[i].x = app.screen.width / 2 * 0.85;
+	coin[i].y = app.screen.height / 2;
+
+	// Add it to the game
+	app.stage.addChild(coin[i]);
+
+}
+bump = new Bump(PIXI);
+tink = new Tink(PIXI,app.view);
+const style = new PIXI.TextStyle({
+    fontFamily: 'Arial',
+    fontSize: 36,
+    fontStyle: 'italic',
+    fontWeight: 'bold',
+    fill: ['#ffffff', '#00ff99'], // gradient
+    stroke: '#4a1850',
+    strokeThickness: 5,
+    dropShadow: true,
+    dropShadowColor: '#000000',
+    dropShadowBlur: 4,
+    dropShadowAngle: Math.PI / 6,
+    dropShadowDistance: 6,
+    wordWrap: true,
+    wordWrapWidth: 440,
+});
+text  = []
+score = [0,0,0,0];
+limit = [6,6,2,6];
+textX = [   0,-370,  0,370];
+textY = [-370,   0,370,  0];
 //// Make hippos
-const hippoY = new PIXI.Sprite(Ytext);
-const hippoR = new PIXI.Sprite(Rtext);
-const hippoG = new PIXI.Sprite(Gtext);
-const hippoB = new PIXI.Sprite(Btext);
+hippoText = [];
+hippo = [];
+delay = [30,30,30,30];
+timer = [0,0,0,0];
+startX = [0,-450,0,330];
+startY = [-510,-60,270,-60];
+endX = [0,-400,0,280];
+endY = [-460,-60,220,-60];
+key = [];
+keyCode = [ 38,37,40,39];
+for(let k = 0; k<4; k++){
+	//hippo texture
+	hippoText[k] = PIXI.Texture.from('images/hippo'+k+'.png');
+	//make hippo sprite
+	hippo[k] = new PIXI.Sprite(hippoText[k]);
+	//center and make it smaller
+	hippo[k].scale.set(0.5);
+	//hippo starting X and Y position with offset
+	hippo[k].x = app.screen.width / 2 * 0.85 + startX[k];
+	hippo[k].y = app.screen.height / 2 + startY[k];
+	//add hippo to stage
+	app.stage.addChild(hippo[k]);
+	tink.makeInteractive(hippo[k]);
+	
 
 
-// Center and make it smaller
-zeroTwo.scale.set(0.3);
-zeroTwo.anchor.set(0.5);
+	//up 0 left 1 down 2 right 3
+	key[k] = keyboard(keyCode[k]);
+	
+	
+	//arrow key `press` method
+	key[k].press = function () {
+		if(timer[k]<delay[k]) return;
+		timer[k]=0;
+		hippo[k].x = app.screen.width / 2 * 0.85 + endX[k];
+		hippo[k].y = app.screen.height / 2 + endY[k];
+	};
 
-hippoY.scale.set(0.5);
-hippoR.scale.set(0.5);
-hippoG.scale.set(0.5);
-hippoB.scale.set(0.5);
+	//arrow key `release` method
+	key[k].release = function () {
+		hippo[k].x = app.screen.width / 2 * 0.85 + startX[k];
+		hippo[k].y = app.screen.height / 2 + startY[k];
+	};
+	
+	//arrow key `press` method
+	hippo[k].press = function () {
+		if(timer[k]<delay[k]) return;
+		timer[k]=0;
+		hippo[k].x = app.screen.width / 2 * 0.85 + endX[k];
+		hippo[k].y = app.screen.height / 2 + endY[k];
+	};
 
-// Place 
-zeroTwo.x = app.screen.width / 2 * 0.85;
-zeroTwo.y = app.screen.height / 2;
-
-hippoY.x = app.screen.width / 2 * 0.85 + 330;
-hippoY.y = app.screen.height / 2 - 60;
-
-hippoR.x = app.screen.width / 2 * 0.85;
-hippoR.y = app.screen.height / 2 - 510;
-
-hippoG.x = app.screen.width / 2 * 0.85 - 450;
-hippoG.y = app.screen.height / 2 - 60;
-
-hippoB.x = app.screen.width / 2 * 0.85;
-hippoB.y = app.screen.height / 2 + 270;
-
-
-// Add it to the game
-app.stage.addChild(zeroTwo);
-
-app.stage.addChild(hippoY);
-app.stage.addChild(hippoR);
-app.stage.addChild(hippoG);
-app.stage.addChild(hippoB);
-
-
-///////
-//Capture the keyboard arrow keys
-
-  var left = keyboard(37),
-      up = keyboard(38),
-      right = keyboard(39),
-      down = keyboard(40);
-
-  //Left arrow key `press` method
-  left.press = function () {
-	hippoG.x = app.screen.width / 2 * 0.85 - 400;
-	hippoG.y = app.screen.height / 2 - 60;
-  };
-
-  //Left arrow key `release` method
-  left.release = function () {
-	hippoG.x = app.screen.width / 2 * 0.85 - 450;
-	hippoG.y = app.screen.height / 2 - 60;
-  };
-
-  //Up
-  up.press = function () {
-    hippoR.x = app.screen.width / 2 * 0.85;
-	hippoR.y = app.screen.height / 2 - 460;
-  };
-  up.release = function () {
-    hippoR.x = app.screen.width / 2 * 0.85;
-	hippoR.y = app.screen.height / 2 - 510;
-  };
-
-  //Right
-  right.press = function () {
-    hippoY.x = app.screen.width / 2 * 0.85 + 280;
-	hippoY.y = app.screen.height / 2 - 60;
-  };
-  right.release = function () {
-    hippoY.x = app.screen.width / 2 * 0.85 + 330;
-	hippoY.y = app.screen.height / 2 - 60;
-  };
-
-  //Down
-  down.press = function () {
-    hippoB.x = app.screen.width / 2 * 0.85;
-	hippoB.y = app.screen.height / 2 + 220;
-  };
-  down.release = function () {
-    hippoB.x = app.screen.width / 2 * 0.85;
-	hippoB.y = app.screen.height / 2 + 270;
-  };
+	//arrow key `release` method
+	hippo[k].release = function () {
+		hippo[k].x = app.screen.width / 2 * 0.85 + startX[k];
+		hippo[k].y = app.screen.height / 2 + startY[k];
+	};
+	
+	text[k] = new PIXI.Text(""+score[k], style);
+	text[k].x = textX[k] + 385;
+	text[k].y = textY[k] + 375;
+	app.stage.addChild(text[k]);
+}
 
 //////
 
@@ -229,144 +236,145 @@ app.ticker.add((delta) => {
 	// Deterministic:
 	delta = 1
 
+	for(let i=0;i<20;i++){
+		// Check for new acceleration in vector field
 
-	// Check for new acceleration in vector field
+		x = Math.floor(coin[i].x/perPix)
+		y = Math.floor(coin[i].y/perPix)
 
-	x = Math.floor(zeroTwo.x/perPix)
-	y = Math.floor(zeroTwo.y/perPix)
+		// Always posative (0 to 1)
+		dx = coin[i].x/perPix - x;
+		dy = coin[i].y/perPix - y;
 
-	// Always posative (0 to 1)
-	dx = zeroTwo.x/perPix - x;
-	dy = zeroTwo.y/perPix - y;
+
+		vect = vectorField[x][y]
+		// console.log("testing", vect.myScale)
+		// console.log("test", vect.rotation)
+
+		// Get 4 near nodes
+		vect1 = vectorField[(x+0)%(vfwidth-1)][(y+0)%(vfheight-1)];
+		vect2 = vectorField[(x+1)%(vfwidth-1)][(y+0)%(vfheight-1)];
+		vect3 = vectorField[(x+0)%(vfwidth-1)][(y+1)%(vfheight-1)];
+		vect4 = vectorField[(x+1)%(vfwidth-1)][(y+1)%(vfheight-1)];
+
+		// Copy their values
+		mag1 = vect1.myMag;
+		mag2 = vect2.myMag;
+		mag3 = vect3.myMag;
+		mag4 = vect4.myMag;
+
+		// Weigh their values
+		mag1 *= (1-dx + 1-dy)/2;
+		mag2 *= (  dx + 1-dy)/2;
+		mag3 *= (1-dx +   dy)/2;
+		mag4 *= (  dx +   dy)/2;
+
+		// Vector addition
+		magx = Math.cos(vect1.rotation - Math.PI/2) * mag1 +
+			Math.cos(vect2.rotation - Math.PI/2) * mag2 +
+			Math.cos(vect3.rotation - Math.PI/2) * mag3 +
+			Math.cos(vect4.rotation - Math.PI/2) * mag4;
+
+		magy = Math.sin(vect1.rotation - Math.PI/2) * mag1 +
+			Math.sin(vect2.rotation - Math.PI/2) * mag2 +
+			Math.sin(vect3.rotation - Math.PI/2) * mag3 +
+			Math.sin(vect4.rotation - Math.PI/2) * mag4;
+
+
+		mag = vect.myMag
+		// mag = Math.sqrt(magx*magx+magy*magy);
+		rot = Math.PI/2 +
+			Math.atan(magy/magx) +
+			(magx < 0 ? Math.PI : 0);
+
+		coin[i].acceleration.x = Math.cos(rot - Math.PI/2) * mag
+		coin[i].acceleration.y = Math.sin(rot - Math.PI/2) * mag
+
+		// Fix the edge cases
+		// if(x+1 >= vfwidth)
+			coin[i].acceleration.x = Math.cos(vect.rotation - Math.PI/2) * mag //* 0.1
+		// if(y+1 >= vfheight)
+			coin[i].acceleration.y = Math.sin(vect.rotation - Math.PI/2) * mag //* 0.1
+
+		coin[i].speed.r = Math.sqrt(coin[i].speed.x*coin[i].speed.x+coin[i].speed.y*coin[i].speed.y);
+
+
+		// Air resistance only if above certain speed
+		airResist = 0.005
+		if(coin[i].speed.r >= 0.1 && false){
+			coin[i].acceleration.x -= Math.cos(coin[i].rotation - Math.PI/2) * airResist * coin[i].speed.r;
+			coin[i].acceleration.y -= Math.sin(coin[i].rotation - Math.PI/2) * airResist * coin[i].speed.r;
+		}
+
+
+		// coin[i].acceleration.x = 0.02
+		// coin[i].acceleration.y = 0.02
+
+		// Update speed
+		coin[i].speed.x += coin[i].acceleration.x * delta
+		coin[i].speed.y += coin[i].acceleration.y * delta
+
+		// Speed limit
+		speedLimit = 10
+		coin[i].speed.x = Math.sign(coin[i].speed.x) * Math.min(speedLimit, Math.abs(coin[i].speed.x))
+		coin[i].speed.y = Math.sign(coin[i].speed.y) * Math.min(speedLimit, Math.abs(coin[i].speed.y))
+
+		// Speed minimun (if too slow then stop)
+		if(coin[i].speed.r < 0.01){
+			console.log("stoped")
+			coin[i].speed.x = 0
+			coin[i].speed.y = 0
+		}
+
+		// Update angle with speed
+		newRot =
+			Math.PI/2 +
+			Math.atan(coin[i].speed.y/coin[i].speed.x) +
+			(coin[i].speed.x < 0 ? Math.PI : 0);
+
+		// If the speed is 0 then newRot is NaN
+		// We want to keep the pervious direction
+		if(! isNaN(newRot))
+			coin[i].rotation = newRot
+
+		// Update position
+		coin[i].x += coin[i].speed.x * delta
+		coin[i].y += coin[i].speed.y * delta
+
+		// Wrap
+		// coin[i].x = coin[i].x % app.screen.width
+		// coin[i].y = coin[i].y % app.screen.height
+		// coin[i].x = coin[i].x < 0 ? coin[i].x + app.screen.width : coin[i].x
+		// coin[i].y = coin[i].y < 0 ? coin[i].y + app.screen.height : coin[i].y
+
+		// Bounce like light
+		if(coin[i].x < 0 || coin[i].x > app.screen.width)
+			coin[i].speed.x *= -0.5;
+		if(coin[i].y < 0 || coin[i].y > app.screen.height)
+			coin[i].speed.y *= -0.5;
+
+		// Limit position
+		coin[i].x = Math.min(coin[i].x, app.screen.width-1);
+		coin[i].x = Math.max(coin[i].x, 1);
+		coin[i].y = Math.min(coin[i].y, app.screen.height-1);
+		coin[i].y = Math.max(coin[i].y, 1);
 	
-	////when BUTTON DOWN FOR HIPPOS
-	//adjust by 50px
-	/*
-	hippoY.x = app.screen.width / 2 * 0.85 + 280;
-	hippoY.y = app.screen.height / 2 - 60;
-
-	hippoR.x = app.screen.width / 2 * 0.85;
-	hippoR.y = app.screen.height / 2 - 460;
-
-	hippoG.x = app.screen.width / 2 * 0.85 - 400;
-	hippoG.y = app.screen.height / 2 - 60;
-
-	hippoB.x = app.screen.width / 2 * 0.85;
-	hippoB.y = app.screen.height / 2 + 220;
-	*/
-
-	vect = vectorField[x][y]
-	// console.log("testing", vect.myScale)
-	// console.log("test", vect.rotation)
-
-	// Get 4 near nodes
-	vect1 = vectorField[(x+0)%(vfwidth-1)][(y+0)%(vfheight-1)];
-	vect2 = vectorField[(x+1)%(vfwidth-1)][(y+0)%(vfheight-1)];
-	vect3 = vectorField[(x+0)%(vfwidth-1)][(y+1)%(vfheight-1)];
-	vect4 = vectorField[(x+1)%(vfwidth-1)][(y+1)%(vfheight-1)];
-
-	// Copy their values
-	mag1 = vect1.myMag;
-	mag2 = vect2.myMag;
-	mag3 = vect3.myMag;
-	mag4 = vect4.myMag;
-
-	// Weigh their values
-	mag1 *= (1-dx + 1-dy)/2;
-	mag2 *= (  dx + 1-dy)/2;
-	mag3 *= (1-dx +   dy)/2;
-	mag4 *= (  dx +   dy)/2;
-
-	// Vector addition
-	magx = Math.cos(vect1.rotation - Math.PI/2) * mag1 +
-		Math.cos(vect2.rotation - Math.PI/2) * mag2 +
-		Math.cos(vect3.rotation - Math.PI/2) * mag3 +
-		Math.cos(vect4.rotation - Math.PI/2) * mag4;
-
-	magy = Math.sin(vect1.rotation - Math.PI/2) * mag1 +
-		Math.sin(vect2.rotation - Math.PI/2) * mag2 +
-		Math.sin(vect3.rotation - Math.PI/2) * mag3 +
-		Math.sin(vect4.rotation - Math.PI/2) * mag4;
-
-
-	mag = vect.myMag
-	// mag = Math.sqrt(magx*magx+magy*magy);
-	rot = Math.PI/2 +
-		Math.atan(magy/magx) +
-		(magx < 0 ? Math.PI : 0);
-
-	zeroTwo.acceleration.x = Math.cos(rot - Math.PI/2) * mag
-	zeroTwo.acceleration.y = Math.sin(rot - Math.PI/2) * mag
-
-	// Fix the edge cases
-	// if(x+1 >= vfwidth)
-		zeroTwo.acceleration.x = Math.cos(vect.rotation - Math.PI/2) * mag //* 0.1
-	// if(y+1 >= vfheight)
-		zeroTwo.acceleration.y = Math.sin(vect.rotation - Math.PI/2) * mag //* 0.1
-
-	zeroTwo.speed.r = Math.sqrt(zeroTwo.speed.x*zeroTwo.speed.x+zeroTwo.speed.y*zeroTwo.speed.y);
-
-
-	// Air resistance only if above certain speed
-	airResist = 0.005
-	if(zeroTwo.speed.r >= 0.1 && false){
-		zeroTwo.acceleration.x -= Math.cos(zeroTwo.rotation - Math.PI/2) * airResist * zeroTwo.speed.r;
-		zeroTwo.acceleration.y -= Math.sin(zeroTwo.rotation - Math.PI/2) * airResist * zeroTwo.speed.r;
+		// for each hippo
+		for(let k = 0; k<4;k++){
+			if (i==0) timer[k]++;
+			if (timer[k]==5){
+				hippo[k].x = app.screen.width / 2 * 0.85 + startX[k];
+				hippo[k].y = app.screen.height / 2 + startY[k];
+			}
+			if(bump.hitTestRectangle(hippo[k],coin[i])){
+				if (coin[i].visible && score[k]<limit[k] && timer[k]<5){
+					coin[i].visible = false;
+					text[k].text = "" + ++score[k];
+				}
+			}
+		}
 	}
-
-
-	// zeroTwo.acceleration.x = 0.02
-	// zeroTwo.acceleration.y = 0.02
-
-	// Update speed
-	zeroTwo.speed.x += zeroTwo.acceleration.x * delta
-	zeroTwo.speed.y += zeroTwo.acceleration.y * delta
-
-	// Speed limit
-	speedLimit = 10
-	zeroTwo.speed.x = Math.sign(zeroTwo.speed.x) * Math.min(speedLimit, Math.abs(zeroTwo.speed.x))
-	zeroTwo.speed.y = Math.sign(zeroTwo.speed.y) * Math.min(speedLimit, Math.abs(zeroTwo.speed.y))
-
-	// Speed minimun (if too slow then stop)
-	if(zeroTwo.speed.r < 0.01){
-		console.log("stoped")
-		zeroTwo.speed.x = 0
-		zeroTwo.speed.y = 0
-	}
-
-	// Update angle with speed
-	newRot =
-		Math.PI/2 +
-		Math.atan(zeroTwo.speed.y/zeroTwo.speed.x) +
-		(zeroTwo.speed.x < 0 ? Math.PI : 0);
-
-	// If the speed is 0 then newRot is NaN
-	// We want to keep the pervious direction
-	if(! isNaN(newRot))
-		zeroTwo.rotation = newRot
-
-	// Update position
-	zeroTwo.x += zeroTwo.speed.x * delta
-	zeroTwo.y += zeroTwo.speed.y * delta
-
-	// Wrap
-	// zeroTwo.x = zeroTwo.x % app.screen.width
-	// zeroTwo.y = zeroTwo.y % app.screen.height
-	// zeroTwo.x = zeroTwo.x < 0 ? zeroTwo.x + app.screen.width : zeroTwo.x
-	// zeroTwo.y = zeroTwo.y < 0 ? zeroTwo.y + app.screen.height : zeroTwo.y
-
-	// Bounce like light
-	if(zeroTwo.x < 0 || zeroTwo.x > app.screen.width)
-		zeroTwo.speed.x *= -0.5;
-	if(zeroTwo.y < 0 || zeroTwo.y > app.screen.height)
-		zeroTwo.speed.y *= -0.5;
-
-	// Limit position
-	zeroTwo.x = Math.min(zeroTwo.x, app.screen.width-1);
-	zeroTwo.x = Math.max(zeroTwo.x, 1);
-	zeroTwo.y = Math.min(zeroTwo.y, app.screen.height-1);
-	zeroTwo.y = Math.max(zeroTwo.y, 1);
-
+	tink.update();
 })
 
 function createVector(x, y, d, m) {
@@ -453,42 +461,4 @@ function onDragMove() {
 		this.scale.set((maxScale - minScale) * newScale + minScale);
 
 	}
-}
-
-
-//KEYBOARD FUNCTIONS
-//The `keyboard` helper function
-function keyboard(keyCode) {
-  var key = {};
-  key.code = keyCode;
-  key.isDown = false;
-  key.isUp = true;
-  key.press = undefined;
-  key.release = undefined;
-  //The `downHandler`
-  key.downHandler = function (event) {
-    if (event.keyCode === key.code) {
-      if (key.isUp && key.press) key.press();
-      key.isDown = true;
-      key.isUp = false;
-    }
-    event.preventDefault();
-  };
-
-  //The `upHandler`
-  key.upHandler = function (event) {
-    if (event.keyCode === key.code) {
-      if (key.isDown && key.release) key.release();
-      key.isDown = false;
-      key.isUp = true;
-    }
-    event.preventDefault();
-  };
-
-  //Attach event listeners
-  window.addEventListener("keydown", key.downHandler.bind(key), false);
-  window.addEventListener("keyup", key.upHandler.bind(key), false);
-
-  //Return the key object
-  return key;
 }
