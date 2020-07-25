@@ -12,14 +12,20 @@ document.body.appendChild(app.view);
 // Initialize the pixi Graphics class
 circle = new PIXI.Graphics();
 
-circle.beginFill(0xe74c3c); // Red
+// Draw a circle
+circle.beginFill(0xd6d6d6); // White
+circle.drawCircle(app.screen.width/2, app.screen.height/2, 1300); // drawCircle(x, y, radius)
+circle.endFill();
 
 // Draw a circle
+circle.beginFill(0xe74c3c); // Red
 circle.drawCircle(app.screen.width/2, app.screen.height/2, 400); // drawCircle(x, y, radius)
 circle.endFill();
 
+// Draw a circle
 circle.beginFill(0x6ee0ff); // Blue
 circle.drawCircle(app.screen.width/2, app.screen.height/2, 350);
+circle.endFill();
 
 // Add child
 app.stage.addChild(circle);
@@ -75,12 +81,13 @@ for(let i = 0; i < app.screen.width/perPix; i++){
 
 		hyp = Math.sqrt(dx*dx+dy*dy);
 
+		// Starting form the inner most
 		if(hyp < 340)
-			mag = 0.25;
+			mag = 0.25*0;
 		else if(hyp < 400)
-			mag = 1;
+			mag = 0.25;
 		else
-			mag = 0;
+			mag = 0.25*0;
 
 
 		vectorField[i][j] = createVector(
@@ -100,32 +107,34 @@ for(let i = 0; i < app.screen.width/perPix; i++){
 	}
 }
 
+var seed = 1;
+function random() {
+    var x = Math.sin(seed++) * 10000;
+    return x - Math.floor(x);
+}
+
 coin = [];
 for(let i=0;i<20;i++){
 	
-	// Make a zero two
+	// Make a coin
 	coin[i] = new PIXI.Sprite(texture);
 
 	// Center and make it smaller
 	coin[i].scale.set(0.3);
 	coin[i].anchor.set(0.5);
 
-	// Place her in the center
-	coin[i].x = app.screen.width / 2 * 0.80;
-	coin[i].y = app.screen.height / 2;
+	// Place
+	coin[i].x = app.screen.width / 2 * (random() * 0.6 - 0.3) + app.screen.width / 2;
+	coin[i].y = app.screen.height / 2 * (random() * 0.6 - 0.3) + app.screen.height / 2;
 
 	coin[i].acceleration = new PIXI.Point(0);
 	coin[i].speed = new PIXI.Point(0);
-	coin[i].speed.y = Math.random() * 40 - 20; 
-	coin[i].speed.x = Math.random() * 40 - 20;
+	coin[i].speed.y = random() * 4 - 2; 
+	coin[i].speed.x = random() * 4 - 2;
 
 	// Center and make it smaller
 	coin[i].scale.set(0.3);
 	coin[i].anchor.set(0.5);
-
-	// Place 
-	coin[i].x = app.screen.width / 2 * 0.85;
-	coin[i].y = app.screen.height / 2;
 
 	// Add it to the game
 	app.stage.addChild(coin[i]);
@@ -149,6 +158,7 @@ const style = new PIXI.TextStyle({
     wordWrap: true,
     wordWrapWidth: 440,
 });
+
 text  = []
 score = [0,0,0,0];
 limit = [6,6,2,6];
@@ -164,31 +174,31 @@ startY = [-510,-60,270,-60];
 endX = [0,-400,0,280];
 endY = [-460,-60,220,-60];
 key = [];
-keyCode = [ 38,37,40,39];
+keyCode = [38,37,40,39];
 for(let k = 0; k<4; k++){
-	//hippo texture
+	// hippo texture
 	hippoText[k] = PIXI.Texture.from('images/hippo'+k+'.png');
-	//make hippo sprite
+	// make hippo sprite
 	hippo[k] = new PIXI.Sprite(hippoText[k]);
-	//center and make it smaller
+	hippo[k].visible = false
+	// center and make it smaller
 	hippo[k].scale.set(0.5);
-	//hippo starting X and Y position with offset
+	// hippo starting X and Y position with offset
 	hippo[k].x = app.screen.width / 2 * 0.85 + startX[k];
 	hippo[k].y = app.screen.height / 2 + startY[k];
-	//add hippo to stage
+	// add hippo to stage
 	app.stage.addChild(hippo[k]);
 	tink.makeInteractive(hippo[k]);
-	
 
 
 	//up 0 left 1 down 2 right 3
 	key[k] = keyboard(keyCode[k]);
-	
-	
+
+
 	//arrow key `press` method
 	key[k].press = function () {
-		if(timer[k]<delay[k]) return;
-		timer[k]=0;
+		if(timer[k] < delay[k]) return;
+		timer[k] = 0;
 		hippo[k].x = app.screen.width / 2 * 0.85 + endX[k];
 		hippo[k].y = app.screen.height / 2 + endY[k];
 	};
@@ -198,11 +208,11 @@ for(let k = 0; k<4; k++){
 		hippo[k].x = app.screen.width / 2 * 0.85 + startX[k];
 		hippo[k].y = app.screen.height / 2 + startY[k];
 	};
-	
+
 	//arrow key `press` method
 	hippo[k].press = function () {
-		if(timer[k]<delay[k]) return;
-		timer[k]=0;
+		if(timer[k] < delay[k]) return;
+		timer[k] = 0;
 		hippo[k].x = app.screen.width / 2 * 0.85 + endX[k];
 		hippo[k].y = app.screen.height / 2 + endY[k];
 	};
@@ -212,14 +222,13 @@ for(let k = 0; k<4; k++){
 		hippo[k].x = app.screen.width / 2 * 0.85 + startX[k];
 		hippo[k].y = app.screen.height / 2 + startY[k];
 	};
-	
+
 	text[k] = new PIXI.Text(""+score[k], style);
-	text[k].x = textX[k] + 385;
+	text[k].x = textX[k] + 385; // Adding inital offset
 	text[k].y = textY[k] + 375;
 	app.stage.addChild(text[k]);
 }
 
-//////
 
 console.log(vectorField.length)
 console.log(vectorField[0].length)
@@ -310,18 +319,55 @@ app.ticker.add((delta) => {
 		// coin[i].acceleration.x = 0.02
 		// coin[i].acceleration.y = 0.02
 
-		// Update speed
-		coin[i].speed.x += coin[i].acceleration.x * delta
-		coin[i].speed.y += coin[i].acceleration.y * delta
+		// Bouncing off the walls if the coin is on the wall
+
+		xFCenter = coin[i].x - app.screen.width/2;
+		yFCenter = coin[i].y - app.screen.height/2;
+		coinFromCenter = Math.sqrt(xFCenter*xFCenter+yFCenter*yFCenter);
+
+		if(coinFromCenter > 350 && coinFromCenter < 350 + 10){
+			// Imagine the tangent angle of the wall to be 'a'
+			// And the angle of the coin to be 'b'
+			// Then we find the new 'b' angle (c) to be 2a+pi-b
+
+			// To find 'a' we first find the position of where the coin is
+			// to find 'b' we have the speed of the coin
+
+			if(coin[i].x <= 0.01)
+				console.log("0")
+
+			a = Math.atan(coin[i].y/(coin[i].x == 0 ? 0.001 : coin[i].x));
+			b = Math.atan(coin[i].speed.y/(coin[i].speed.x == 0 ? 0.001 : coin[i].speed.x));
+
+			c = 2*a + Math.PI - b;
+
+			// Given C we can find the corresponding component vectors
+			coin[i].speed.x = Math.cos(c) * coin[i].speed.r;
+			coin[i].speed.y = Math.sin(c) * coin[i].speed.r;
+
+			// Fix? bring it slightly closer to the center
+			xFCenter = Math.sign(xFCenter)*(Math.abs(xFCenter) - 0)
+			yFCenter = Math.sign(yFCenter)*(Math.abs(yFCenter) - 0)
+
+			coin[i].x = xFCenter + app.screen.width/2;
+			coin[i].y = yFCenter + app.screen.height/2;
+
+		}else{
+			// Update speed
+			coin[i].speed.x += coin[i].acceleration.x * delta
+			coin[i].speed.y += coin[i].acceleration.y * delta
+		}
 
 		// Speed limit
 		speedLimit = 10
 		coin[i].speed.x = Math.sign(coin[i].speed.x) * Math.min(speedLimit, Math.abs(coin[i].speed.x))
 		coin[i].speed.y = Math.sign(coin[i].speed.y) * Math.min(speedLimit, Math.abs(coin[i].speed.y))
 
-		// Speed minimun (if too slow then stop)
-		if(coin[i].speed.r < 0.01){
-			console.log("stoped")
+		// Speed minimum (if too slow then stop)
+		// DISABLED
+		// coin[i].speed.r = Math.sqrt(coin[i].speed.x*coin[i].speed.x+coin[i].speed.y*coin[i].speed.y);
+		if(false && coin[i].speed.r < 0.01){
+			console.log("stopped")
 			coin[i].speed.x = 0
 			coin[i].speed.y = 0
 		}
@@ -333,7 +379,7 @@ app.ticker.add((delta) => {
 			(coin[i].speed.x < 0 ? Math.PI : 0);
 
 		// If the speed is 0 then newRot is NaN
-		// We want to keep the pervious direction
+		// We want to keep the previous direction
 		if(! isNaN(newRot))
 			coin[i].rotation = newRot
 
@@ -360,9 +406,9 @@ app.ticker.add((delta) => {
 		coin[i].y = Math.max(coin[i].y, 1);
 	
 		// for each hippo
-		for(let k = 0; k<4;k++){
-			if (i==0) timer[k]++;
-			if (timer[k]==5){
+		for(let k = 0; k < 4;k++){
+			if (i == 0) timer[k]++;
+			if (timer[k] == 5){
 				hippo[k].x = app.screen.width / 2 * 0.85 + startX[k];
 				hippo[k].y = app.screen.height / 2 + startY[k];
 			}
