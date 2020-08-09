@@ -177,12 +177,13 @@ endX = [0,-400,0,280];
 endY = [-460,-60,220,-60];
 key = [];
 keyCode = [38,37,40,39];
+pressers = []
 for(let k = 0; k<4; k++){
 	// hippo texture
 	hippoText[k] = PIXI.Texture.from('images/hippo'+k+'.png');
 	// make hippo sprite
 	hippo[k] = new PIXI.Sprite(hippoText[k]);
-	hippo[k].visible = false
+	hippo[k].visible = true
 	// center and make it smaller
 	hippo[k].scale.set(0.5);
 	// hippo starting X and Y position with offset
@@ -196,22 +197,26 @@ for(let k = 0; k<4; k++){
 	//up 0 left 1 down 2 right 3
 	key[k] = keyboard(keyCode[k]);
 
-
-	//arrow key `press` method
-	key[k].press = function () {
+	function presser() {
 		if(timer[k] < delay[k]) return;
 		timer[k] = 0;
 		hippo[k].x = app.screen.width / 2 * 0.85 + endX[k];
 		hippo[k].y = app.screen.height / 2 + endY[k];
 	};
 
-	//arrow key `release` method
-	key[k].release = function () {
-		hippo[k].x = app.screen.width / 2 * 0.85 + startX[k];
-		hippo[k].y = app.screen.height / 2 + startY[k];
-	};
+	// Add the presser to the array
+	pressers[k] = presser
 
-	//arrow key `press` method
+	//arrow key `press` method (KEYBOARD)
+	key[k].press = presser
+
+	// //arrow key `release` method
+	// key[k].release = function () {
+	// 	hippo[k].x = app.screen.width / 2 * 0.85 + startX[k];
+	// 	hippo[k].y = app.screen.height / 2 + startY[k];
+	// };
+
+	//arrow key `press` method (MOUSE)
 	hippo[k].press = function () {
 		if(timer[k] < delay[k]) return;
 		timer[k] = 0;
@@ -219,11 +224,11 @@ for(let k = 0; k<4; k++){
 		hippo[k].y = app.screen.height / 2 + endY[k];
 	};
 
-	//arrow key `release` method
-	hippo[k].release = function () {
-		hippo[k].x = app.screen.width / 2 * 0.85 + startX[k];
-		hippo[k].y = app.screen.height / 2 + startY[k];
-	};
+	// //arrow key `release` method
+	// hippo[k].release = function () {
+	// 	hippo[k].x = app.screen.width / 2 * 0.85 + startX[k];
+	// 	hippo[k].y = app.screen.height / 2 + startY[k];
+	// };
 
 	text[k] = new PIXI.Text(""+score[k], style);
 	text[k].x = textX[k] + 385; // Adding initial offset
@@ -238,6 +243,8 @@ console.log(vectorField[0].length)
 vfwidth = vectorField.length
 vfheight = vectorField[0].length
 
+count = 0
+
 // Ticks
 app.ticker.add((delta) => {
 
@@ -246,6 +253,13 @@ app.ticker.add((delta) => {
 
 	// Deterministic:
 	delta = 1
+
+	if(count > 100){
+		pressers[1]()
+		count = 0
+	}else{
+		count++
+	}
 
 	for(let i=0;i<20;i++){
 		// Check for new acceleration in vector field
@@ -303,9 +317,9 @@ app.ticker.add((delta) => {
 
 		// Fix the edge cases
 		// if(x+1 >= vfwidth)
-			coin[i].acceleration.x = Math.cos(vect.rotation - Math.PI/2) * mag //* 0.1
+			// coin[i].acceleration.x = Math.cos(vect.rotation - Math.PI/2) * mag //* 0.1
 		// if(y+1 >= vfheight)
-			coin[i].acceleration.y = Math.sin(vect.rotation - Math.PI/2) * mag //* 0.1
+			// coin[i].acceleration.y = Math.sin(vect.rotation - Math.PI/2) * mag //* 0.1
 
 		coin[i].speed.r = Math.sqrt(coin[i].speed.x*coin[i].speed.x+coin[i].speed.y*coin[i].speed.y);
 
