@@ -40,15 +40,15 @@ const textureVector = PIXI.Texture.from('images/arrow.png');
 texture.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
 textureVector.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
 
-// Asume that height and width are the same
+// Assume that height and width are the same
 arrowOGSize = textureVector.frame.height;
 arrowOGSize = 1600
 
-// The size we want the texutre to be (assume square)
+// The size we want the texture to be (assume square)
 // Unit size
 perPix = 50
 
-// This is also the bigest size
+// This is also the biggest size
 arrowFinalSizeMax = perPix;
 arrowFinalSizeMin = 10;
 
@@ -62,7 +62,7 @@ minScale = arrowFinalSizeMin/arrowOGSize
 
 vectorField = []
 
-// To know the center cordinate
+// To know the center coordinate
 halfi = (app.screen.width/perPix)/2 - 0.5
 halfj = (app.screen.height/perPix)/2 - 0.5
 
@@ -83,17 +83,19 @@ for(let i = 0; i < app.screen.width/perPix; i++){
 
 		// Starting form the inner most
 		if(hyp < 340)
-			mag = 0.25*0;
+			mag = 0.05;
 		else if(hyp < 400)
-			mag = 0.25;
-		else
 			mag = 0.25*0;
+		else
+			mag = 0.25;
 
 
 		vectorField[i][j] = createVector(
 			x,
 			y,
-			6*Math.PI/4 + Math.atan((j-halfj)/(i-halfi)) + ((i-halfi) < 0 ? Math.PI : 0),
+			//6*Math.PI
+			// Math.PI/2 + Math.atan((j-halfj)/(i-halfi)) + ((i-halfi) < 0 ? Math.PI : 0),
+			Math.PI/2 + Math.atan2(j-halfj, i-halfi),
 			// (Math.abs((j-2.5)/6)+Math.abs((i-3.5)/8))
 			// 0.25
 			mag
@@ -224,7 +226,7 @@ for(let k = 0; k<4; k++){
 	};
 
 	text[k] = new PIXI.Text(""+score[k], style);
-	text[k].x = textX[k] + 385; // Adding inital offset
+	text[k].x = textX[k] + 385; // Adding initial offset
 	text[k].y = textY[k] + 375;
 	app.stage.addChild(text[k]);
 }
@@ -325,7 +327,7 @@ app.ticker.add((delta) => {
 		yFCenter = coin[i].y - app.screen.height/2;
 		coinFromCenter = Math.sqrt(xFCenter*xFCenter+yFCenter*yFCenter);
 
-		if(coinFromCenter > 350 && coinFromCenter < 350 + 10){
+		if(coinFromCenter > 341 && coinFromCenter < 340 + 399){
 			// Imagine the tangent angle of the wall to be 'a'
 			// And the angle of the coin to be 'b'
 			// Then we find the new 'b' angle (c) to be 2a+pi-b
@@ -336,18 +338,19 @@ app.ticker.add((delta) => {
 			if(coin[i].x <= 0.01)
 				console.log("0")
 
-			a = Math.atan(coin[i].y/(coin[i].x == 0 ? 0.001 : coin[i].x));
-			b = Math.atan(coin[i].speed.y/(coin[i].speed.x == 0 ? 0.001 : coin[i].speed.x));
+			a = Math.atan2(coin[i].y, coin[i].x);
+			b = Math.atan2(coin[i].speed.y, coin[i].speed.x);
 
 			c = 2*a + Math.PI - b;
 
 			// Given C we can find the corresponding component vectors
-			coin[i].speed.x = Math.cos(c) * coin[i].speed.r;
-			coin[i].speed.y = Math.sin(c) * coin[i].speed.r;
+			reduction = 0.9
+			coin[i].speed.x = Math.cos(c) * coin[i].speed.r * reduction;
+			coin[i].speed.y = Math.sin(c) * coin[i].speed.r * reduction;
 
 			// Fix? bring it slightly closer to the center
-			xFCenter = Math.sign(xFCenter)*(Math.abs(xFCenter) - 0)
-			yFCenter = Math.sign(yFCenter)*(Math.abs(yFCenter) - 0)
+			xFCenter = Math.sign(xFCenter)*(Math.abs(xFCenter) - 1)
+			yFCenter = Math.sign(yFCenter)*(Math.abs(yFCenter) - 1)
 
 			coin[i].x = xFCenter + app.screen.width/2;
 			coin[i].y = yFCenter + app.screen.height/2;
@@ -383,7 +386,7 @@ app.ticker.add((delta) => {
 		if(! isNaN(newRot))
 			coin[i].rotation = newRot
 
-		// Update position
+		// Update position if significant
 		coin[i].x += coin[i].speed.x * delta
 		coin[i].y += coin[i].speed.y * delta
 
@@ -490,8 +493,7 @@ function onDragMove() {
 		// Dicrection (rotation)
 		this.rotation =
 			Math.PI/2 +					// Rotate it
-			Math.atan(dy/dx) +			// Change the angle accordingly
-			(dx < 0 ? Math.PI : 0);		// If it is the special case fix it
+			Math.atan2(dy, dx);			// Change the angle accordingly
 
 		// Magnitude (distance)
 		hyp = Math.sqrt(dx*dx+dy*dy);
