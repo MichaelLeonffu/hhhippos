@@ -82,12 +82,14 @@ for(let i = 0; i < app.screen.width/perPix; i++){
 		hyp = Math.sqrt(dx*dx+dy*dy);
 
 		// Starting form the inner most
-		if(hyp < 340)
-			mag = 0.05;
+		if(hyp < 340 + 10)
+			mag = 0.6;
 		else if(hyp < 400)
 			mag = 0.25*0;
 		else
 			mag = 0.25;
+
+		mag = 0.6
 
 
 		vectorField[i][j] = createVector(
@@ -171,10 +173,11 @@ hippoText = [];
 hippo = [];
 delay = [30,30,30,30];
 timer = [0,0,0,0];
-startX = [0,-450,0,330];
-startY = [-510,-60,270,-60];
-endX = [0,-400,0,280];
-endY = [-460,-60,220,-60];
+//		   Top Red   Left G  Bot Blu Right Yel
+startX 	= [0		,-450	,0		,330	];
+startY 	= [-450-60	,0-60	,330-60	,0-60	];
+endX 	= [0		,-450+50,0		,330-50	];
+endY 	= [-450-10	,0-60	,330-110,0-60	];
 key = [];
 keyCode = [38,37,40,39];
 pressers = []
@@ -317,9 +320,9 @@ app.ticker.add((delta) => {
 
 		// Fix the edge cases
 		// if(x+1 >= vfwidth)
-			// coin[i].acceleration.x = Math.cos(vect.rotation - Math.PI/2) * mag //* 0.1
+			coin[i].acceleration.x = Math.cos(vect.rotation - Math.PI/2) * mag //* 0.1
 		// if(y+1 >= vfheight)
-			// coin[i].acceleration.y = Math.sin(vect.rotation - Math.PI/2) * mag //* 0.1
+			coin[i].acceleration.y = Math.sin(vect.rotation - Math.PI/2) * mag //* 0.1
 
 		coin[i].speed.r = Math.sqrt(coin[i].speed.x*coin[i].speed.x+coin[i].speed.y*coin[i].speed.y);
 
@@ -349,22 +352,27 @@ app.ticker.add((delta) => {
 			// To find 'a' we first find the position of where the coin is
 			// to find 'b' we have the speed of the coin
 
-			if(coin[i].x <= 0.01)
-				console.log("0")
-
-			a = Math.atan2(coin[i].y, coin[i].x);
+			a = Math.atan2(yFCenter, xFCenter);
 			b = Math.atan2(coin[i].speed.y, coin[i].speed.x);
 
 			c = 2*a + Math.PI - b;
 
 			// Given C we can find the corresponding component vectors
-			reduction = 0.9
+			reduction = 0.8
 			coin[i].speed.x = Math.cos(c) * coin[i].speed.r * reduction;
 			coin[i].speed.y = Math.sin(c) * coin[i].speed.r * reduction;
 
 			// Fix? bring it slightly closer to the center
-			xFCenter = Math.sign(xFCenter)*(Math.abs(xFCenter) - 1)
-			yFCenter = Math.sign(yFCenter)*(Math.abs(yFCenter) - 1)
+			// xFCenter = Math.sign(xFCenter)*(Math.abs(xFCenter) - 1)
+			// yFCenter = Math.sign(yFCenter)*(Math.abs(yFCenter) - 1)
+
+			// Bring it inside of the circle no matter where it is
+			// since a is the angle from the center of the circle
+			// Generate the x y pair that would be at the edge of the circle
+			xFCenter = Math.cos(a) * 340
+			yFCenter = Math.sin(a) * 340
+
+
 
 			coin[i].x = xFCenter + app.screen.width/2;
 			coin[i].y = yFCenter + app.screen.height/2;
