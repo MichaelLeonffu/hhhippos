@@ -83,13 +83,19 @@ for(let i = 0; i < app.screen.width/perPix; i++){
 
 		// Starting form the inner most
 		if(hyp < 340 + 10)
-			mag = 0.6;
+			mag = -0.005;
 		else if(hyp < 400)
-			mag = 0.25*0;
+			mag = 0.25;
 		else
 			mag = 0.25;
 
-		mag = 0.6
+
+		ccwSpin 	= 0 			// 0
+		toCenter 	= Math.PI/2 	// 90
+		cwSpin 		= Math.PI 		// 180
+		toOut 		= 3*Math.PI/2 	// 270
+
+		spinAdj = toCenter
 
 
 		vectorField[i][j] = createVector(
@@ -97,7 +103,7 @@ for(let i = 0; i < app.screen.width/perPix; i++){
 			y,
 			//6*Math.PI
 			// Math.PI/2 + Math.atan((j-halfj)/(i-halfi)) + ((i-halfi) < 0 ? Math.PI : 0),
-			Math.PI/2 + Math.atan2(j-halfj, i-halfi),
+			spinAdj + Math.atan2(j-halfj, i-halfi),
 			// (Math.abs((j-2.5)/6)+Math.abs((i-3.5)/8))
 			// 0.25
 			mag
@@ -123,21 +129,17 @@ for(let i=0;i<20;i++){
 	// Make a coin
 	coin[i] = new PIXI.Sprite(texture);
 
-	// Center and make it smaller
-	coin[i].scale.set(0.3);
-	coin[i].anchor.set(0.5);
-
 	// Place
-	coin[i].x = app.screen.width / 2 * (random() * 0.6 - 0.3) + app.screen.width / 2;
-	coin[i].y = app.screen.height / 2 * (random() * 0.6 - 0.3) + app.screen.height / 2;
+	coin[i].x = app.screen.width 	/ 2 * (random() * 0.4 - 0.2) + app.screen.width / 2;
+	coin[i].y = app.screen.height 	/ 2 * (random() * 0.4 - 0.2) + app.screen.height / 2;
 
 	coin[i].acceleration = new PIXI.Point(0);
 	coin[i].speed = new PIXI.Point(0);
-	coin[i].speed.y = random() * 4 - 2; 
-	coin[i].speed.x = random() * 4 - 2;
+	coin[i].speed.y = random() * 1 - 0.5; 
+	coin[i].speed.x = random() * 1 - 0.5;
 
 	// Center and make it smaller
-	coin[i].scale.set(0.3);
+	coin[i].scale.set(0.5);
 	coin[i].anchor.set(0.5);
 
 	// Add it to the game
@@ -174,10 +176,13 @@ hippo = [];
 delay = [30,30,30,30];
 timer = [0,0,0,0];
 //		   Top Red   Left G  Bot Blu Right Yel
-startX 	= [0		,-450	,0		,330	];
-startY 	= [-450-60	,0-60	,330-60	,0-60	];
-endX 	= [0		,-450+50,0		,330-50	];
-endY 	= [-450-10	,0-60	,330-110,0-60	];
+startX 	= [0		,-400	,0		,400	];
+startY 	= [-400		,0		,400	,0		];
+endX 	= [0		,-400+50,0		,400-50	];
+endY 	= [-400+50	,0		,400-50	,0		];
+
+
+
 key = [];
 keyCode = [38,37,40,39];
 pressers = []
@@ -189,8 +194,9 @@ for(let k = 0; k<4; k++){
 	hippo[k].visible = true
 	// center and make it smaller
 	hippo[k].scale.set(0.5);
+	hippo[k].anchor.set(0.5);
 	// hippo starting X and Y position with offset
-	hippo[k].x = app.screen.width / 2 * 0.85 + startX[k];
+	hippo[k].x = app.screen.width / 2  + startX[k];
 	hippo[k].y = app.screen.height / 2 + startY[k];
 	// add hippo to stage
 	app.stage.addChild(hippo[k]);
@@ -203,7 +209,7 @@ for(let k = 0; k<4; k++){
 	function presser() {
 		if(timer[k] < delay[k]) return;
 		timer[k] = 0;
-		hippo[k].x = app.screen.width / 2 * 0.85 + endX[k];
+		hippo[k].x = app.screen.width / 2  + endX[k];
 		hippo[k].y = app.screen.height / 2 + endY[k];
 	};
 
@@ -223,7 +229,7 @@ for(let k = 0; k<4; k++){
 	hippo[k].press = function () {
 		if(timer[k] < delay[k]) return;
 		timer[k] = 0;
-		hippo[k].x = app.screen.width / 2 * 0.85 + endX[k];
+		hippo[k].x = app.screen.width / 2  + endX[k];
 		hippo[k].y = app.screen.height / 2 + endY[k];
 	};
 
@@ -237,6 +243,18 @@ for(let k = 0; k<4; k++){
 	text[k].x = textX[k] + 385; // Adding initial offset
 	text[k].y = textY[k] + 375;
 	app.stage.addChild(text[k]);
+}
+
+// Show locations
+if(false)
+for(let i = 0; i < 4; i++){
+	// Draw a circle
+	circle.beginFill(0xffbbff); // Blue
+	circle.drawCircle(app.screen.width / 2 + startX[i], app.screen.height / 2 + startY[i], 200);
+	circle.endFill();
+
+	// Add child
+	app.stage.addChild(circle);
 }
 
 
@@ -429,12 +447,19 @@ app.ticker.add((delta) => {
 		coin[i].x = Math.max(coin[i].x, 1);
 		coin[i].y = Math.min(coin[i].y, app.screen.height-1);
 		coin[i].y = Math.max(coin[i].y, 1);
+
 	
 		// for each hippo
 		for(let k = 0; k < 4;k++){
-			if (i == 0) timer[k]++;
+			if(i == 0){
+				timer[k]++;
+				// Check if this coin is close to hippo
+
+
+
+			}
 			if (timer[k] == 5){
-				hippo[k].x = app.screen.width / 2 * 0.85 + startX[k];
+				hippo[k].x = app.screen.width / 2  + startX[k];
 				hippo[k].y = app.screen.height / 2 + startY[k];
 			}
 			if(bump.hitTestRectangle(hippo[k],coin[i])){
@@ -445,6 +470,8 @@ app.ticker.add((delta) => {
 			}
 		}
 	}
+
+
 	tink.update();
 })
 
@@ -462,6 +489,9 @@ function createVector(x, y, d, m) {
 
 	// center the vect's anchor point
 	vect.anchor.set(0.5);
+
+	// visable
+	vect.visible = true;
 
 	// set the d and m
 	vect.myMag = m;
