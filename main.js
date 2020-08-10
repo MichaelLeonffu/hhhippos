@@ -206,6 +206,12 @@ endX 	= [0		,-400+50,0		,400-50	];
 endY 	= [-400+50	,0		,400-50	,0		];
 
 
+reset = 49 // "!"
+keyboard(reset).press = function(){
+	setCookie("played", "false", 1)
+	console.log("Cookie set RESET: ", document.cookie)
+}
+
 
 key = [];
 keyCode = [38,37,40,39];
@@ -231,19 +237,17 @@ for(let k = 0; k<4; k++){
 	//up 0 left 1 down 2 right 3
 	key[k] = keyboard(keyCode[k]);
 
-	function presser() {
+	// Add the presser to the array
+	pressers[k] = function() {
 		if(timer[k] < delay[k]) return;
 		timer[k] = 0;
 		hippo[k].x = app.screen.width / 2  + endX[k];
 		hippo[k].y = app.screen.height / 2 + endY[k];
 	};
 
-	// Add the presser to the array
-	pressers[k] = presser
-
 	//arrow key `press` method (KEYBOARD)
 	if(k == 2) // player only
-	key[k].press = presser
+	key[k].press = pressers[k]
 
 	// //arrow key `release` method
 	// key[k].release = function () {
@@ -444,14 +448,6 @@ for(let i = 0; i < menuItems.length; i++){
 // Countdown
 countingDown = true
 function countDown(){
-	function setCookie(cname, cvalue, exdays) {
-		var d = new Date();
-		d.setTime(d.getTime() + (exdays*24*60*60*1000));
-		var expires = "expires="+ d.toUTCString();
-		document.cookie = cname + "=" + cvalue + ";" + expires + ";path=index.html";
-	}
-
-	setCookie("played", "true", 1)
 	menuText.text = messages.shift()
 	if(messages.length <= 0){
 		countingDown = false
@@ -495,9 +491,23 @@ function getCookie(cname) {
 	return "";
 }
 
-if(getCookie("played") == "false" || getCookie("played") == "")
+// Set the cookie
+function setCookie(cname, cvalue, exdays) {
+	var d = new Date();
+	d.setTime(d.getTime() + (exdays*24*60*60*1000));
+	var expires = "expires="+ d.toUTCString();
+	// document.cookie = cname + "=" + cvalue + ";" + expires + ";path=index.html";
+	document.cookie = cname + "=" + cvalue;
+}
+
+console.log("Cookie read: ", document.cookie)
+console.log("Cookie reader: ", getCookie("played"))
+if(getCookie("played") == "false" || getCookie("played") == ""){
+
+	setCookie("played", "true", 1)
+	console.log("Cookie set2: ", document.cookie)
 	countDown()
-else{
+}else{
 	ending()
 }
 
