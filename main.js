@@ -444,6 +444,7 @@ for(let i = 0; i < menuItems.length; i++){
 // Countdown
 countingDown = true
 function countDown(){
+	document.cookie = "played";
 	menuText.text = messages.shift()
 	if(messages.length <= 0){
 		countingDown = false
@@ -460,8 +461,6 @@ function countDown(){
 		)
 }
 
-countDown()
-
 
 const blurFil = new PIXI.filters.BlurFilter();
 blurFil.blur = 10
@@ -473,63 +472,71 @@ for(let i = 0; i < 4; i++){
 }
 circle.filters = [blurFil];
 
+if(document.cookie == '')
+	countDown()
+else{
+	ending()
+}
+
+function ending(){
+	menu = new PIXI.Graphics();
+
+	// Draw a menu
+	menu.beginFill(0x000000); // black
+	menu.drawRect(app.screen.width/2-300-10, app.screen.height/2-350-10, 600+20, 700+20);
+	menu.endFill();
+
+	menu.beginFill(0xc07548); // black
+	menu.drawRect(app.screen.width/2-300, app.screen.height/2-350, 600, 700);
+	menu.endFill();
+	app.stage.addChild(menu);
+
+	blurFil.blur = 10
+	const endsyle = new PIXI.TextStyle({
+	    fontFamily: 'Arial',
+	    fontSize: 32,
+	    // fontStyle: 'italic',
+	    fontWeight: 'bold',
+	    // fill: ['#ffffff', '#00ff99'], // gradient
+	    stroke: '#bbbbbb',
+	    strokeThickness: 1,
+	    wordWrap: true,
+	    wordWrapWidth: 450,
+	});
+
+	menuText = new PIXI.Text("Game Over!", titleStyle);
+	menuText.x = app.screen.width/2/2+40
+	menuText.y = app.screen.height/2-300
+	app.stage.addChild(menuText);
+
+	finalScore = `
+		      Scoreboard:
+
+
+		1.  Red      Hippo .... 6
+		1.  Green  Hippo .... 6
+		1.  Yellow Hippo .... 6
+		4.  Blue    Hippo .... 2 (You)
+
+
+
+
+
+		Thank you for playing!
+	`
+
+	menuText = new PIXI.Text(finalScore, endsyle);
+	menuText.x = app.screen.width/2/2
+	menuText.y = app.screen.height/2-300+100
+	app.stage.addChild(menuText);
+}
 
 // Ticks
 app.ticker.add((delta) => {
 
 	// Game over scene
 	if(end){
-		menu = new PIXI.Graphics();
-
-		// Draw a menu
-		menu.beginFill(0x000000); // black
-		menu.drawRect(app.screen.width/2-300-10, app.screen.height/2-350-10, 600+20, 700+20);
-		menu.endFill();
-
-		menu.beginFill(0xc07548); // black
-		menu.drawRect(app.screen.width/2-300, app.screen.height/2-350, 600, 700);
-		menu.endFill();
-		app.stage.addChild(menu);
-
-		blurFil.blur = 10
-		const endsyle = new PIXI.TextStyle({
-		    fontFamily: 'Arial',
-		    fontSize: 32,
-		    // fontStyle: 'italic',
-		    fontWeight: 'bold',
-		    // fill: ['#ffffff', '#00ff99'], // gradient
-		    stroke: '#bbbbbb',
-		    strokeThickness: 1,
-		    wordWrap: true,
-		    wordWrapWidth: 450,
-		});
-
-		menuText = new PIXI.Text("Game Over!", titleStyle);
-		menuText.x = app.screen.width/2/2+40
-		menuText.y = app.screen.height/2-300
-		app.stage.addChild(menuText);
-
-		finalScore = `
-			      Scoreboard:
-
-
-			1.  Red      Hippo .... 6
-			1.  Green  Hippo .... 6
-			1.  Yellow Hippo .... 6
-			4.  Blue    Hippo .... 2 (You)
-
-
-
-
-
-			Thank you for playing!
-		`
-
-		menuText = new PIXI.Text(finalScore, endsyle);
-		menuText.x = app.screen.width/2/2
-		menuText.y = app.screen.height/2-300+100
-		app.stage.addChild(menuText);
-
+		ending()
 		end = false; //only run this once
 	}
 
