@@ -110,7 +110,7 @@ for(let i = 0; i < app.screen.width/perPix; i++){
 		// else
 		// 	mag = 0.25;
 
-		mag = -0.005
+		mag = -0.01;
 
 
 		ccwSpin 	= 0 			// 0
@@ -202,6 +202,7 @@ hippoText = [];
 hippo = [];
 delay = [30,30,30,30];
 timer = [0,0,0,0];
+timeout = [70, 150, -1, 40]
 //		   Top Red   Left G  Bot Blu Right Yel
 startX 	= [0		,-400	,0		,400	];
 startY 	= [-400		,0		,400	,0		];
@@ -298,8 +299,6 @@ for(let i = 0; i < 4; i++){
 
 }
 
-count = 0
-
 // Ticks
 app.ticker.add((delta) => {
 
@@ -307,14 +306,6 @@ app.ticker.add((delta) => {
 
 	// Deterministic:
 	delta = 1
-
-	if(false)
-	if(count > 100){
-		pressers[1]()
-		count = 0
-	}else{
-		count++
-	}
 
 	for(let i = 0; i < 20; i++){
 		// Check for new acceleration in vector field
@@ -343,13 +334,47 @@ app.ticker.add((delta) => {
 		// If hippo splash, then hippo acceleration 
 		for(let k = 0; k < 4; k++){
 
+			hipposLeft = 4
+			for(let l = 0; l < 4; l++) if(limit[l] == score[l]) hipposLeft--
+
+			// Which hippo is last
+			lastHippo = -1
+			if(hipposLeft == 1)
+				for(let l = 0; l < 4; l++) if(limit[l] != score[l]) lastHippo = l
+
 			// If this coin is close and hippo is recently closed then splash
 			if(timer[k] == 0 && inCircleRange(hippoSplash[k], coin[i])){
 				// Find angle between hippo splash and coin
 				angle = Math.atan2(coin[i].y - hippoSplash[k].y, coin[i].x - hippoSplash[k].x)
 
+				//Player hippo push away, if cpu then attract
+				mag = k == 2 ? 0.1 : -0.1
+
+				mag = 0.5
+
+				// Strong splash if it is at limit
+				mag = limit[k] == score[k] ? 0.5 : mag
+
+				// If only 1 hippo left then attract all else push hard
+				// if(hipposLeft == 1){
+				// 	console.log("last hippo", lastHippo)
+				// 	mag = lastHippo == k ? -1 : 1
+				// }
+
 				// Using angle as vector direction push coin
-				mag = 2
+				coin[i].acceleration.x = Math.cos(angle) * mag
+				coin[i].acceleration.y = Math.sin(angle) * mag
+			}
+
+			// If this coin is close and hippo that is at limit
+			if(inCircleRange(hippoDetect[k], coin[i]) && limit[k] == score[k]){
+				// Find angle between hippo splash and coin
+				angle = Math.atan2(coin[i].y - hippoSplash[k].y, coin[i].x - hippoSplash[k].x)
+
+				//limit hippo push away
+				mag = 0.5
+
+				// Using angle as vector direction push coin
 				coin[i].acceleration.x = Math.cos(angle) * mag
 				coin[i].acceleration.y = Math.sin(angle) * mag
 			}
@@ -454,29 +479,24 @@ app.ticker.add((delta) => {
 
 	
 		// for each hippo
-		for(let k = 0; k < 4;k++){
+		for(let k = 0; k < 4; k++){
 
 			// Check if this coin is close to hippo
 			if(inCircleRange(hippoDetect[k], coin[i])){
-				pressers[k]()
+				// Unless it is player
+				if(k != 2) pressers[k]()
 			}
 
-			// If this coin is close and hippo is recently closed then splash
-			if(inCircleRange(hippoSplash[k], coin[i])){
-				// Find angle between hippo splash and coin
-				angle = Math.atan2(coin[i].y - hippoSplash[k].y, coin[i].x - hippoSplash[k].x)
-
-				// Using angle as vector direction push coin
-				mag = 0.6
-				coin[i].acceleration.x = Math.cos(angle - Math.PI/2) * mag
-				coin[i].acceleration.y = Math.sin(angle - Math.PI/2) * mag
-			}
-
-
-			if (timer[k] == 5){
+			if (timer[k] >= 5){
 				hippo[k].x = app.screen.width / 2  + startX[k];
 				hippo[k].y = app.screen.height / 2 + startY[k];
 			}
+
+			// After a longer time it should click
+			if (timer[k] >= timeout[k]){
+				if(k != 2) pressers[k]()
+			}
+
 			if(bump.hitTestRectangle(hippo[k],coin[i])){
 				if (coin[i].visible && score[k]<limit[k] && timer[k]<5){
 					coin[i].visible = false;
@@ -485,6 +505,44 @@ app.ticker.add((delta) => {
 			}
 		}
 	}
+
+	// Change all the vectors to center onto a non limit hippo
+	// for each hippo find the one that is not at max at a prioty
+	hipposLeft = 4
+	for(let l = 0; l < 4; l++) if(limit[l] == score[l]) hipposLeft--
+
+
+	hx 		= halfi;
+	hy 		= halfj;
+	hippoSel = -1;
+	// Only bias (where k = 2 is last)
+	if(hipposLeft <= 3)
+	for(let k = 2; k < 2+4;k++){
+		if(limit[k%4] != score[k%4])
+			hippoSel = k%4;
+	}
+
+	// Chosen hippo, direct all vectors to that hippo (if there are only 2 hippos that haven't ate)
+	if(hippoSel != -1){
+		hx = hippoSplash[hippoSel].x/perPix - 0.5
+		hy = hippoSplash[hippoSel].y/perPix - 0.5
+	}
+
+	initalMag = -0.01;
+	finalMag = -0.05;
+	deltaMag = finalMag - initalMag
+	// As there are less coins increase mag
+	coinCount = 0;
+	for(let i = 0; i < 20; i++) if(coin[i].visible) coinCount++;
+
+	// if count is at 100% then it will be at initalMag, otherwise linearly close to final
+	mag = initalMag + (deltaMag)*(coinCount/20)
+
+	// For each vector make it change direction
+	for(let i = 0; i < vectorField.length; i++)
+		for(let j = 0; j < vectorField[i].length; j++){
+			vectorField[i][j].rotation = Math.PI/2 + Math.atan2(j-hy, i-hx)
+		}
 
 	for(let k = 0; k < 4;k++) timer[k]++;
 
@@ -514,6 +572,7 @@ function createVector(x, y, d, m) {
 	// set the d and m
 	vect.myMag = m;
 	vect.scale.set((maxScale - minScale) * m + minScale);
+	// vect.scale.set(0.03);
 	vect.rotation = d;
 
 
@@ -552,9 +611,35 @@ function onDragEnd() {
 	this.data = null;
 }
 
+function updateDirection(vector, newPos){
+	// Delta
+	dx = newPosition.x - this.x;
+	dy = newPosition.y - this.y;
+
+	// Dicrection (rotation)
+	this.rotation =
+		Math.PI/2 +					// Rotate it
+		Math.atan2(dy, dx);			// Change the angle accordingly
+
+	// Magnitude (distance)
+	hyp = Math.sqrt(dx*dx+dy*dy);
+
+	// Calcuate the Percent magnitude
+	newScale = (hyp - arrowFinalSizeMin/2)/(arrowFinalSizeMax - arrowFinalSizeMin/2)
+
+	newScale = Math.min(newScale, 1);	// 100%
+	newScale = Math.max(newScale, 0);	// 0%
+
+	this.myMag = newScale;
+	// console.log("SET to:", (maxScale - minScale) * newScale + minScale)
+	this.scale.set((maxScale - minScale) * newScale + minScale);
+}
+
 function onDragMove() {
 	if (this.dragging) {
 		const newPosition = this.data.getLocalPosition(this.parent);
+
+		// updateDirection(this, newPosition)
 
 		// Delta
 		dx = newPosition.x - this.x;
