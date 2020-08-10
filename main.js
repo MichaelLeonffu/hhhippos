@@ -495,7 +495,7 @@ function getCookie(cname) {
 	return "";
 }
 
-if(getCookie("played") == "false")
+if(getCookie("played") == "false" || getCookie("played") == "")
 	countDown()
 else{
 	ending()
