@@ -200,7 +200,7 @@ textY = [-370,   0,370,  0];
 //// Make hippos
 hippoText = [];
 hippo = [];
-delay = [30,30,30,30];
+delay = [15,15,15,15];
 timer = [0,0,0,0];
 timeout = [70, 150, -1, 40]
 //		   Top Red   Left G  Bot Blu Right Yel
@@ -213,6 +213,7 @@ endY 	= [-400+50	,0		,400-50	,0		];
 
 key = [];
 keyCode = [38,37,40,39];
+space = 32;
 pressers = []
 for(let k = 0; k<4; k++){
 	// hippo texture
@@ -245,6 +246,7 @@ for(let k = 0; k<4; k++){
 	pressers[k] = presser
 
 	//arrow key `press` method (KEYBOARD)
+	if(k == 2) // player only
 	key[k].press = presser
 
 	// //arrow key `release` method
@@ -254,6 +256,7 @@ for(let k = 0; k<4; k++){
 	// };
 
 	//arrow key `press` method (MOUSE)
+	if(k == 2) // player only
 	hippo[k].press = function () {
 		if(timer[k] < delay[k]) return;
 		timer[k] = 0;
@@ -272,6 +275,14 @@ for(let k = 0; k<4; k++){
 	text[k].y = textY[k] + 375;
 	app.stage.addChild(text[k]);
 }
+
+// Add space
+keyboard(space).press = function() {
+	if(timer[2] < delay[2]) return;
+	timer[2] = 0;
+	hippo[2].x = app.screen.width / 2  + endX[2];
+	hippo[2].y = app.screen.height / 2 + endY[2];
+};
 
 
 // Generate hippo interference range
@@ -307,6 +318,8 @@ app.ticker.add((delta) => {
 	// Deterministic:
 	delta = 1
 
+	coinsLeft = 20
+
 	for(let i = 0; i < 20; i++){
 		// Check for new acceleration in vector field
 
@@ -314,6 +327,7 @@ app.ticker.add((delta) => {
 		if(!coin[i].visible){
 			coin[i].x = 450
 			coin[i].y = 450
+			coinsLeft--;
 			continue
 		}
 
@@ -355,11 +369,11 @@ app.ticker.add((delta) => {
 				// Strong splash if it is at limit
 				mag = limit[k] == score[k] ? 0.5 : mag
 
-				// If only 1 hippo left then attract all else push hard
-				// if(hipposLeft == 1){
-				// 	console.log("last hippo", lastHippo)
-				// 	mag = lastHippo == k ? -1 : 1
-				// }
+				//If only 1 hippo left then attract all else push hard
+				if(hipposLeft == 1){
+					console.log("last hippo", lastHippo)
+					mag = lastHippo == k ? -1 : 1
+				}
 
 				// Using angle as vector direction push coin
 				coin[i].acceleration.x = Math.cos(angle) * mag
@@ -378,6 +392,31 @@ app.ticker.add((delta) => {
 				coin[i].acceleration.x = Math.cos(angle) * mag
 				coin[i].acceleration.y = Math.sin(angle) * mag
 			}
+		}
+
+		// If there is only 1 coin left then B-line to the last hippo
+		if(coinsLeft == 1){
+			lastHippo = -1
+			for(let k = 0; k < 4; k++){
+
+				hipposLeft = 4
+				for(let l = 0; l < 4; l++) if(limit[l] == score[l]) hipposLeft--
+
+				// Which hippo is last
+				lastHippo = -1
+				if(hipposLeft == 1)
+					for(let l = 0; l < 4; l++) if(limit[l] != score[l]) lastHippo = l
+			}
+
+			// Find angle between hippo splash and coin
+			angle = Math.atan2(coin[i].y - hippoSplash[lastHippo].y, coin[i].x - hippoSplash[lastHippo].x)
+
+			// Attract
+			mag = -10
+
+			// Using angle as vector direction push coin
+			coin[i].acceleration.x = Math.cos(angle) * mag
+			coin[i].acceleration.y = Math.sin(angle) * mag
 		}
 
 		// Bouncing off the walls if the coin is on the wall
@@ -567,7 +606,7 @@ function createVector(x, y, d, m) {
 	vect.anchor.set(0.5);
 
 	// visable
-	vect.visible = true;
+	vect.visible = false;
 
 	// set the d and m
 	vect.myMag = m;
