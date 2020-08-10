@@ -292,55 +292,11 @@ app.ticker.add((delta) => {
 		dx = coin[i].x/perPix - x;
 		dy = coin[i].y/perPix - y;
 
+		mag = vectorField[x][y].myMag
 
-		vect = vectorField[x][y]
-		// console.log("testing", vect.myScale)
-		// console.log("test", vect.rotation)
-
-		// Get 4 near nodes
-		vect1 = vectorField[(x+0)%(vfwidth-1)][(y+0)%(vfheight-1)];
-		vect2 = vectorField[(x+1)%(vfwidth-1)][(y+0)%(vfheight-1)];
-		vect3 = vectorField[(x+0)%(vfwidth-1)][(y+1)%(vfheight-1)];
-		vect4 = vectorField[(x+1)%(vfwidth-1)][(y+1)%(vfheight-1)];
-
-		// Copy their values
-		mag1 = vect1.myMag;
-		mag2 = vect2.myMag;
-		mag3 = vect3.myMag;
-		mag4 = vect4.myMag;
-
-		// Weigh their values
-		mag1 *= (1-dx + 1-dy)/2;
-		mag2 *= (  dx + 1-dy)/2;
-		mag3 *= (1-dx +   dy)/2;
-		mag4 *= (  dx +   dy)/2;
-
-		// Vector addition
-		magx = Math.cos(vect1.rotation - Math.PI/2) * mag1 +
-			Math.cos(vect2.rotation - Math.PI/2) * mag2 +
-			Math.cos(vect3.rotation - Math.PI/2) * mag3 +
-			Math.cos(vect4.rotation - Math.PI/2) * mag4;
-
-		magy = Math.sin(vect1.rotation - Math.PI/2) * mag1 +
-			Math.sin(vect2.rotation - Math.PI/2) * mag2 +
-			Math.sin(vect3.rotation - Math.PI/2) * mag3 +
-			Math.sin(vect4.rotation - Math.PI/2) * mag4;
-
-
-		mag = vect.myMag
-		// mag = Math.sqrt(magx*magx+magy*magy);
-		rot = Math.PI/2 +
-			Math.atan(magy/magx) +
-			(magx < 0 ? Math.PI : 0);
-
-		coin[i].acceleration.x = Math.cos(rot - Math.PI/2) * mag
-		coin[i].acceleration.y = Math.sin(rot - Math.PI/2) * mag
-
-		// Fix the edge cases
-		// if(x+1 >= vfwidth)
-			coin[i].acceleration.x = Math.cos(vect.rotation - Math.PI/2) * mag //* 0.1
-		// if(y+1 >= vfheight)
-			coin[i].acceleration.y = Math.sin(vect.rotation - Math.PI/2) * mag //* 0.1
+		// Physics vector field
+		coin[i].acceleration.x = Math.cos(vect.rotation - Math.PI/2) * mag
+		coin[i].acceleration.y = Math.sin(vect.rotation - Math.PI/2) * mag
 
 		coin[i].speed.r = Math.sqrt(coin[i].speed.x*coin[i].speed.x+coin[i].speed.y*coin[i].speed.y);
 
