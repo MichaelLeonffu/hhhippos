@@ -28,9 +28,6 @@ circle.beginFill(0x6ee0ff); // Blue
 circle.drawCircle(app.screen.width/2, app.screen.height/2, 350);
 circle.endFill();
 
-// Add child
-app.stage.addChild(circle);
-
 startX 	= [0		,-400	,0		,400	];
 startY 	= [-400		,0		,400	,0		];
 
@@ -46,10 +43,9 @@ for(let i = 0; i < 4; i++){
 	circle.beginFill(0xffbbff); // pink (detect range)
 	circle.drawCircle(app.screen.width / 2 + startX[i], app.screen.height / 2 + startY[i], 200);
 	circle.endFill();
-
-	// Add child
-	app.stage.addChild(circle);
 }
+
+app.stage.addChild(circle);
 
 
 // create a texture from an image path
@@ -310,8 +306,240 @@ for(let i = 0; i < 4; i++){
 
 }
 
+start = false
+end = false
+// Menu
+
+menuItems = []
+
+// Initialize the pixi Graphics class
+menu = new PIXI.Graphics();
+
+// Draw a menu
+menu.beginFill(0x000000); // black
+menu.drawRect(app.screen.width/2-300-10, app.screen.height/2-350-10, 600+20, 700+20);
+menu.endFill();
+
+menu.beginFill(0xc07548); // black
+menu.drawRect(app.screen.width/2-300, app.screen.height/2-350, 600, 700);
+menu.endFill();
+
+menuItems.push(menu);
+
+// Write menu
+
+const titleStyle = new PIXI.TextStyle({
+    fontFamily: 'Arial',
+    fontSize: 42,
+    // fontStyle: 'italic',
+    fontWeight: 'bold',
+    fill: ['#ffffff', '#00ff99'], // gradient
+    stroke: '#bbbbbb',
+    strokeThickness: 1,
+    dropShadow: true,
+    dropShadowColor: '#222222',
+    dropShadowBlur: 4,
+    dropShadowAngle: Math.PI / 6,
+    dropShadowDistance: 6,
+    align: 'center',
+    wordWrap: true,
+    wordWrapWidth: 700,
+});
+
+const menustyle = new PIXI.TextStyle({
+    fontFamily: 'Arial',
+    fontSize: 32,
+    // fontStyle: 'italic',
+    fontWeight: 'bold',
+    // fill: ['#ffffff', '#00ff99'], // gradient
+    stroke: '#bbbbbb',
+    strokeThickness: 1,
+    // dropShadow: true,
+    // dropShadowColor: '#222222',
+    // dropShadowBlur: 4,
+    // dropShadowAngle: Math.PI / 6,
+    // dropShadowDistance: 6,
+    align: 'center',
+    wordWrap: true,
+    wordWrapWidth: 450,
+});
+
+const messagesStyle = new PIXI.TextStyle({
+    fontFamily: 'Arial',
+    fontSize: 32,
+    // fontStyle: 'italic',
+    fontWeight: 'bold',
+    fill: ['#ffffff', '#ffff33'], // gradient
+    stroke: '#bbbbbb',
+    strokeThickness: 1,
+    dropShadow: true,
+    dropShadowColor: '#222222',
+    dropShadowBlur: 4,
+    dropShadowAngle: Math.PI / 6,
+    dropShadowDistance: 6,
+    align: 'center',
+    wordWrap: true,
+    wordWrapWidth: 700,
+});
+
+menuText = new PIXI.Text("Hungry Hungry Hippos!", titleStyle);
+menuText.x = app.screen.width/2/2-20
+menuText.y = app.screen.height/2-300
+menuItems.push(menuText);
+
+menuText = new PIXI.Text("Catch as many floating coins as you can!", menustyle);
+menuText.x = app.screen.width/2/2
+menuText.y = app.screen.height/2-300+100
+menuItems.push(menuText);
+
+menuText = new PIXI.Text("Use spacebar to eat coins!", menustyle);
+menuText.x = app.screen.width/2/2
+menuText.y = app.screen.height/2-300+200
+menuItems.push(menuText);
+
+menuText = new PIXI.Text("Game will start when all players are connected", menustyle);
+menuText.x = app.screen.width/2/2
+menuText.y = app.screen.height/2-300+400
+menuItems.push(menuText);
+
+messages = [
+	"Waiting for players 1/4...",
+	"Waiting for players 2/4.. ",
+	"Waiting for players 2/4.  ",
+	"Waiting for players 3/4.. ",
+	"Waiting for players 2/4...",
+	"Waiting for players 2/4.. ",
+	"Waiting for players 3/4.  ",
+	"Waiting for players 4/4.. ",
+	"Waiting for players 4/4...",
+
+	"( Syncing all Players... )",
+
+	"   All Players connected! ",
+
+	"   You are the BLUE hippo ", //6
+	"   You are the BLUE hippo ",
+	"   You are the BLUE hippo ",
+
+	"       Starting in 5      ",
+	"       Starting in 4      ",
+	"       Starting in 3      ",
+	"       Starting in 2      ",
+	"       Starting in 1      ",
+
+	"             GO!           ", //0
+	""
+]
+
+menuText = new PIXI.Text("", messagesStyle);
+menuText.x = app.screen.width/2/2+30
+menuText.y = app.screen.height/2+200
+menuItems.push(menuText);
+
+// Draw all text
+for(let i = 0; i < menuItems.length; i++){
+	app.stage.addChild(menuItems[i]);
+}
+
+// Countdown
+countingDown = true
+function countDown(){
+	menuText.text = messages.shift()
+	if(messages.length <= 0){
+		countingDown = false
+		start = true
+		for(let i = 0; i < menuItems.length; i++){
+			app.stage.removeChild(menuItems[i]);
+			blurFil.blur = 0
+		}
+	}
+	if(countingDown)
+		setTimeout(() =>{
+			countDown()
+			},1000 + ((messages.length < 9) ? 0 : Math.random()*1000)
+		)
+}
+
+countDown()
+
+
+const blurFil = new PIXI.filters.BlurFilter();
+blurFil.blur = 10
+
+// Add blur
+for(let i = 0; i < 4; i++){
+	hippo[i].filters = [blurFil];
+	text[i].filters = [blurFil];
+}
+circle.filters = [blurFil];
+
+
 // Ticks
 app.ticker.add((delta) => {
+
+	// Game over scene
+	if(end){
+		menu = new PIXI.Graphics();
+
+		// Draw a menu
+		menu.beginFill(0x000000); // black
+		menu.drawRect(app.screen.width/2-300-10, app.screen.height/2-350-10, 600+20, 700+20);
+		menu.endFill();
+
+		menu.beginFill(0xc07548); // black
+		menu.drawRect(app.screen.width/2-300, app.screen.height/2-350, 600, 700);
+		menu.endFill();
+		app.stage.addChild(menu);
+
+		blurFil.blur = 10
+		const endsyle = new PIXI.TextStyle({
+		    fontFamily: 'Arial',
+		    fontSize: 32,
+		    // fontStyle: 'italic',
+		    fontWeight: 'bold',
+		    // fill: ['#ffffff', '#00ff99'], // gradient
+		    stroke: '#bbbbbb',
+		    strokeThickness: 1,
+		    wordWrap: true,
+		    wordWrapWidth: 450,
+		});
+
+		menuText = new PIXI.Text("Game Over!", titleStyle);
+		menuText.x = app.screen.width/2/2+40
+		menuText.y = app.screen.height/2-300
+		app.stage.addChild(menuText);
+
+		finalScore = `
+			      Scoreboard:
+
+
+			1.  Red      Hippo .... 6
+			1.  Green  Hippo .... 6
+			1.  Yellow Hippo .... 6
+			4.  Blue    Hippo .... 2 (You)
+
+
+
+
+
+			Thank you for playing!
+		`
+
+		menuText = new PIXI.Text(finalScore, endsyle);
+		menuText.x = app.screen.width/2/2
+		menuText.y = app.screen.height/2-300+100
+		app.stage.addChild(menuText);
+
+		end = false; //only run this once
+	}
+
+	if(!start)
+		return
+
+	for(let i = 0; i < menuItems.length; i++){
+		app.stage.removeChild(menuItems[i]);
+		blurFil.blur = 0
+	}
 
 	// delta *= 1
 
@@ -328,6 +556,9 @@ app.ticker.add((delta) => {
 			coin[i].x = 450
 			coin[i].y = 450
 			coinsLeft--;
+			if(coinsLeft == 0){
+				end = true
+			}
 			continue
 		}
 
