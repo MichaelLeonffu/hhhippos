@@ -6,8 +6,9 @@ const app = new PIXI.Application({
 });
 document.body.appendChild(app.view);
 
-
-
+// Libraries
+bump = new Bump(PIXI);
+tink = new Tink(PIXI,app.view);
 
 // Initialize the pixi Graphics class
 circle = new PIXI.Graphics();
@@ -29,6 +30,26 @@ circle.endFill();
 
 // Add child
 app.stage.addChild(circle);
+
+startX 	= [0		,-400	,0		,400	];
+startY 	= [-400		,0		,400	,0		];
+
+// Show locations
+if(false)
+for(let i = 0; i < 4; i++){
+	// Draw a circle
+	circle.beginFill(0xbb33bb); // magenta (spalsh)
+	circle.drawCircle(app.screen.width / 2 + startX[i], app.screen.height / 2 + startY[i], 350);
+	circle.endFill();
+
+	// Draw a circle
+	circle.beginFill(0xffbbff); // pink (detect range)
+	circle.drawCircle(app.screen.width / 2 + startX[i], app.screen.height / 2 + startY[i], 200);
+	circle.endFill();
+
+	// Add child
+	app.stage.addChild(circle);
+}
 
 
 // create a texture from an image path
@@ -82,12 +103,14 @@ for(let i = 0; i < app.screen.width/perPix; i++){
 		hyp = Math.sqrt(dx*dx+dy*dy);
 
 		// Starting form the inner most
-		if(hyp < 340 + 10)
-			mag = -0.005;
-		else if(hyp < 400)
-			mag = 0.25;
-		else
-			mag = 0.25;
+		// if(hyp < 340 + 30)
+		// 	mag = -0.005*0;
+		// else if(hyp < 400)
+		// 	mag = 0.25;
+		// else
+		// 	mag = 0.25;
+
+		mag = -0.005
 
 
 		ccwSpin 	= 0 			// 0
@@ -124,7 +147,7 @@ function random() {
 }
 
 coin = [];
-for(let i=0;i<20;i++){
+for(let i = 0; i < 20; i++){
 	
 	// Make a coin
 	coin[i] = new PIXI.Sprite(texture);
@@ -142,12 +165,16 @@ for(let i=0;i<20;i++){
 	coin[i].scale.set(0.5);
 	coin[i].anchor.set(0.5);
 
+	// For bump physics
+	coin[i].circular 	= true;
+	coin[i].radius 		= 25;
+
 	// Add it to the game
 	app.stage.addChild(coin[i]);
 
 }
-bump = new Bump(PIXI);
-tink = new Tink(PIXI,app.view);
+
+
 const style = new PIXI.TextStyle({
     fontFamily: 'Arial',
     fontSize: 36,
@@ -245,36 +272,43 @@ for(let k = 0; k<4; k++){
 	app.stage.addChild(text[k]);
 }
 
-// Show locations
-if(false)
+
+// Generate hippo interference range
+hippoSplash = []
+hippoDetect = []
 for(let i = 0; i < 4; i++){
-	// Draw a circle
-	circle.beginFill(0xffbbff); // Blue
-	circle.drawCircle(app.screen.width / 2 + startX[i], app.screen.height / 2 + startY[i], 200);
-	circle.endFill();
 
-	// Add child
-	app.stage.addChild(circle);
+	hippoSplash[i] = {
+		x: 				app.screen.width / 2 + startX[i],
+		y: 				app.screen.height / 2 + startY[i],
+		radius: 		350,
+		circular: 		true,
+		xAnchorOffset: 	0.5,
+		yAnchorOffset: 	0.5
+	}
+
+	hippoDetect[i] = {
+		x: 				app.screen.width / 2 + startX[i],
+		y: 				app.screen.height / 2 + startY[i],
+		radius: 		200,
+		circular: 		true,
+		xAnchorOffset: 	0.5,
+		yAnchorOffset: 	0.5
+	}
+
 }
-
-
-console.log(vectorField.length)
-console.log(vectorField[0].length)
-
-vfwidth = vectorField.length
-vfheight = vectorField[0].length
 
 count = 0
 
 // Ticks
 app.ticker.add((delta) => {
 
-
 	// delta *= 1
 
 	// Deterministic:
 	delta = 1
 
+	if(false)
 	if(count > 100){
 		pressers[1]()
 		count = 0
@@ -282,8 +316,15 @@ app.ticker.add((delta) => {
 		count++
 	}
 
-	for(let i=0;i<20;i++){
+	for(let i = 0; i < 20; i++){
 		// Check for new acceleration in vector field
+
+		// If coin eaten then place it far and ignore it
+		if(!coin[i].visible){
+			coin[i].x = 450
+			coin[i].y = 450
+			continue
+		}
 
 		x = Math.floor(coin[i].x/perPix)
 		y = Math.floor(coin[i].y/perPix)
@@ -292,25 +333,27 @@ app.ticker.add((delta) => {
 		dx = coin[i].x/perPix - x;
 		dy = coin[i].y/perPix - y;
 
-		mag = vectorField[x][y].myMag
+		vect 	= vectorField[x][y]
+		mag 	= vect.myMag
 
 		// Physics vector field
 		coin[i].acceleration.x = Math.cos(vect.rotation - Math.PI/2) * mag
 		coin[i].acceleration.y = Math.sin(vect.rotation - Math.PI/2) * mag
 
-		coin[i].speed.r = Math.sqrt(coin[i].speed.x*coin[i].speed.x+coin[i].speed.y*coin[i].speed.y);
+		// If hippo splash, then hippo acceleration 
+		for(let k = 0; k < 4; k++){
 
+			// If this coin is close and hippo is recently closed then splash
+			if(timer[k] == 0 && inCircleRange(hippoSplash[k], coin[i])){
+				// Find angle between hippo splash and coin
+				angle = Math.atan2(coin[i].y - hippoSplash[k].y, coin[i].x - hippoSplash[k].x)
 
-		// Air resistance only if above certain speed
-		airResist = 0.005
-		if(coin[i].speed.r >= 0.1 && false){
-			coin[i].acceleration.x -= Math.cos(coin[i].rotation - Math.PI/2) * airResist * coin[i].speed.r;
-			coin[i].acceleration.y -= Math.sin(coin[i].rotation - Math.PI/2) * airResist * coin[i].speed.r;
+				// Using angle as vector direction push coin
+				mag = 2
+				coin[i].acceleration.x = Math.cos(angle) * mag
+				coin[i].acceleration.y = Math.sin(angle) * mag
+			}
 		}
-
-
-		// coin[i].acceleration.x = 0.02
-		// coin[i].acceleration.y = 0.02
 
 		// Bouncing off the walls if the coin is on the wall
 
@@ -357,6 +400,17 @@ app.ticker.add((delta) => {
 			coin[i].speed.y += coin[i].acceleration.y * delta
 		}
 
+		// Abs speed
+		coin[i].speed.r = Math.sqrt(coin[i].speed.x*coin[i].speed.x+coin[i].speed.y*coin[i].speed.y);
+
+
+		// Air resistance only if above certain speed
+		airResist = 0.005
+		if(coin[i].speed.r >= 0.1 && false){
+			coin[i].acceleration.x -= Math.cos(coin[i].rotation - Math.PI/2) * airResist * coin[i].speed.r;
+			coin[i].acceleration.y -= Math.sin(coin[i].rotation - Math.PI/2) * airResist * coin[i].speed.r;
+		}
+
 		// Speed limit
 		speedLimit = 10
 		coin[i].speed.x = Math.sign(coin[i].speed.x) * Math.min(speedLimit, Math.abs(coin[i].speed.x))
@@ -382,15 +436,9 @@ app.ticker.add((delta) => {
 		if(! isNaN(newRot))
 			coin[i].rotation = newRot
 
-		// Update position if significant
+		// Update position
 		coin[i].x += coin[i].speed.x * delta
 		coin[i].y += coin[i].speed.y * delta
-
-		// Wrap
-		// coin[i].x = coin[i].x % app.screen.width
-		// coin[i].y = coin[i].y % app.screen.height
-		// coin[i].x = coin[i].x < 0 ? coin[i].x + app.screen.width : coin[i].x
-		// coin[i].y = coin[i].y < 0 ? coin[i].y + app.screen.height : coin[i].y
 
 		// Bounce like light
 		if(coin[i].x < 0 || coin[i].x > app.screen.width)
@@ -407,13 +455,24 @@ app.ticker.add((delta) => {
 	
 		// for each hippo
 		for(let k = 0; k < 4;k++){
-			if(i == 0){
-				timer[k]++;
-				// Check if this coin is close to hippo
 
-
-
+			// Check if this coin is close to hippo
+			if(inCircleRange(hippoDetect[k], coin[i])){
+				pressers[k]()
 			}
+
+			// If this coin is close and hippo is recently closed then splash
+			if(inCircleRange(hippoSplash[k], coin[i])){
+				// Find angle between hippo splash and coin
+				angle = Math.atan2(coin[i].y - hippoSplash[k].y, coin[i].x - hippoSplash[k].x)
+
+				// Using angle as vector direction push coin
+				mag = 0.6
+				coin[i].acceleration.x = Math.cos(angle - Math.PI/2) * mag
+				coin[i].acceleration.y = Math.sin(angle - Math.PI/2) * mag
+			}
+
+
 			if (timer[k] == 5){
 				hippo[k].x = app.screen.width / 2  + startX[k];
 				hippo[k].y = app.screen.height / 2 + startY[k];
@@ -427,7 +486,10 @@ app.ticker.add((delta) => {
 		}
 	}
 
+	for(let k = 0; k < 4;k++) timer[k]++;
 
+	// Check coin locations to not be overlaping
+	bump.multipleCircleCollision(coin)
 	tink.update();
 })
 
@@ -517,4 +579,14 @@ function onDragMove() {
 		this.scale.set((maxScale - minScale) * newScale + minScale);
 
 	}
+}
+
+function inCircleRange(circle, point){
+	// Delta
+	dx = point.x - circle.x;
+	dy = point.y - circle.y;
+
+	hyp = Math.sqrt(dx*dx+dy*dy);
+
+	return hyp <= circle.radius;
 }
