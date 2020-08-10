@@ -564,6 +564,9 @@ function ending(){
 	app.stage.addChild(menuText);
 }
 
+
+let coinsLeft = 20
+
 // Ticks
 app.ticker.add((delta) => {
 
@@ -586,8 +589,6 @@ app.ticker.add((delta) => {
 	// Deterministic:
 	delta = 1
 
-	coinsLeft = 20
-
 	for(let i = 0; i < 20; i++){
 		// Check for new acceleration in vector field
 
@@ -595,7 +596,6 @@ app.ticker.add((delta) => {
 		if(!coin[i].visible){
 			coin[i].x = 450
 			coin[i].y = 450
-			coinsLeft--;
 			if(coinsLeft == 0){
 				end = true
 			}
@@ -651,6 +651,26 @@ app.ticker.add((delta) => {
 				coin[i].acceleration.y = Math.sin(angle) * mag
 			}
 
+			// If there is only 1 coin left then B-line to the last hippo
+			if(coinsLeft <= 1){
+				lastHippo = -1
+				for(let l = 0; l < 4; l++)
+					if(limit[l] != score[l])
+						lastHippo = l
+
+				// Find angle between hippo splash and coin
+				angle = Math.atan2(coin[i].y - hippoSplash[lastHippo].y, coin[i].x - hippoSplash[lastHippo].x)
+
+				// Attract
+				mag = -0.01
+
+				// console.log("Last hip", lastHippo, coinsLeft)
+
+				// Using angle as vector direction push coin
+				coin[i].acceleration.x = Math.cos(angle) * mag
+				coin[i].acceleration.y = Math.sin(angle) * mag
+			}
+
 			// If this coin is close and hippo that is at limit
 			if(inCircleRange(hippoDetect[k], coin[i]) && limit[k] == score[k]){
 				// Find angle between hippo splash and coin
@@ -663,31 +683,6 @@ app.ticker.add((delta) => {
 				coin[i].acceleration.x = Math.cos(angle) * mag
 				coin[i].acceleration.y = Math.sin(angle) * mag
 			}
-		}
-
-		// If there is only 1 coin left then B-line to the last hippo
-		if(coinsLeft == 1){
-			lastHippo = -1
-			for(let k = 0; k < 4; k++){
-
-				hipposLeft = 4
-				for(let l = 0; l < 4; l++) if(limit[l] == score[l]) hipposLeft--
-
-				// Which hippo is last
-				lastHippo = -1
-				if(hipposLeft == 1)
-					for(let l = 0; l < 4; l++) if(limit[l] != score[l]) lastHippo = l
-			}
-
-			// Find angle between hippo splash and coin
-			angle = Math.atan2(coin[i].y - hippoSplash[lastHippo].y, coin[i].x - hippoSplash[lastHippo].x)
-
-			// Attract
-			mag = -10
-
-			// Using angle as vector direction push coin
-			coin[i].acceleration.x = Math.cos(angle) * mag
-			coin[i].acceleration.y = Math.sin(angle) * mag
 		}
 
 		// Bouncing off the walls if the coin is on the wall
@@ -810,6 +805,7 @@ app.ticker.add((delta) => {
 			if(bump.hitTestRectangle(hippo[k],coin[i])){
 				if (coin[i].visible && score[k]<limit[k] && timer[k]<5){
 					coin[i].visible = false;
+					coinsLeft--;
 					text[k].text = "" + ++score[k];
 				}
 			}
