@@ -52,6 +52,51 @@ app.stage.addChild(circle);
 const texture = PIXI.Texture.from('images/coin2.png');
 const textureVector = PIXI.Texture.from('images/arrow.png');
 
+// round2 button
+textureButton = PIXI.Texture.from('images/button.png');
+textureButtonDown = PIXI.Texture.from('images/button_down.png');
+textureButtonOver = PIXI.Texture.from('images/button_over.png');
+// round2 button
+const round2_button = new PIXI.Sprite(textureButton);
+round2_button.anchor.set(0.5);
+round2_button.x = 385;
+round2_button.y = 595;
+round2_button.interactive = true;
+round2_button.buttonMode = true;
+round2_button
+	.on('pointerdown', onButtonDown)
+	.on('pointerup', onButtonUp)
+	.on('pointerupoutside', onButtonUp)
+	.on('pointerover', onButtonOver)
+	.on('pointerout', onButtonOut);
+//app.stage.addChild(round2_button);
+function onButtonDown() {
+	this.isdown = true;
+	this.texture = textureButtonDown;
+	this.alpha = 1;
+}
+function onButtonUp() {
+	this.isdown = false;
+	if (this.isOver) {
+		this.texture = textureButtonOver;
+	} else {
+		this.texture = textureButton;
+	}
+}
+function onButtonOver() {
+	this.isOver = true;
+	if (this.isdown) {
+		return;
+	}
+	this.texture = textureButtonOver;
+}
+function onButtonOut() {
+	this.isOver = false;
+	if (this.isdown) {
+		return;
+	}
+	this.texture = textureButton;
+}
 
 // Scale mode for pixelation
 texture.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
@@ -275,6 +320,27 @@ for(let k = 0; k<4; k++){
 	text[k].y = textY[k] + 375;
 	app.stage.addChild(text[k]);
 }
+// countdown for coins  
+coins_text = new PIXI.Text("", style);
+coins_text.x = -370 + 385;
+coins_text.y = -370 + 375;
+app.stage.addChild(coins_text); 
+// round2 button text 
+const buttonStyle = new PIXI.TextStyle({
+    fontFamily: 'Arial',
+	fontSize: 32,
+	// fontStyle: 'italic',
+	fontWeight: 'bold',
+	// fill: ['#ffffff', '#00ff99'], // gradient
+	stroke: '#bbbbbb',
+	strokeThickness: 1,
+	wordWrap: true,
+	wordWrapWidth: 450,
+});
+button_text = new PIXI.Text("round 2", buttonStyle);
+button_text.x = 315;
+button_text.y = 570;
+//app.stage.addChild(button_text); 
 
 // Add space
 keyboard(space).press = function() {
@@ -396,7 +462,7 @@ menuText.x = app.screen.width/2/2
 menuText.y = app.screen.height/2-300+100
 menuItems.push(menuText);
 
-menuText = new PIXI.Text("Use spacebar to eat coins!", menustyle);
+menuText = new PIXI.Text("Use spacebar to get coins!", menustyle);
 menuText.x = app.screen.width/2/2
 menuText.y = app.screen.height/2-300+200
 menuItems.push(menuText);
@@ -574,6 +640,9 @@ app.ticker.add((delta) => {
 	if(end){
 		ending()
 		end = false; //only run this once
+		app.stage.addChild(round2_button);
+		app.stage.addChild(button_text); 
+
 	}
 
 	if(!start)
@@ -809,6 +878,12 @@ app.ticker.add((delta) => {
 					text[k].text = "" + ++score[k];
 				}
 			}
+			// countdown for coins
+			let count = 0;
+			for (let i=0; i<20; i++) {
+				if (coin[i].visible) count++;
+			}
+			coins_text.text = "coins: " + count;
 		}
 	}
 
