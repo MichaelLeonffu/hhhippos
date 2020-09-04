@@ -236,7 +236,7 @@ const style = new PIXI.TextStyle({
 
 text  = []
 score = [0,0,0,0];
-limit = [6,6,2,6];
+limit = [5,5,5,5];
 textX = [   0,-370,  0,370];
 textY = [-370,   0,370,  0];
 //// Make hippos
@@ -635,7 +635,7 @@ if(getCookie("played") == "false" || getCookie("played") == ""){
 }else if(getCookie("played") == "round1"){
 	setCookie("played", "round2", 1) //final round
 	console.log("Cookie set2: ", document.cookie)
-	limit = [6,7,1,6];
+	limit = [5,5,5,5];
 	countDown2()
 }else{
 	ending2()
@@ -702,10 +702,10 @@ function ending(){
 		      Scoreboard:
 		       Round: 1
 
-		1.  Red      Hippo .... 6
-		1.  Green  Hippo .... 6
-		1.  Yellow Hippo .... 6
-		4.  Blue    Hippo .... 2 (You)
+		1.  Red      Hippo .... 5
+		1.  Green  Hippo .... 5
+		1.  Yellow Hippo .... 5
+		4.  Blue    Hippo .... 5 (You)
 
 
 
@@ -778,10 +778,10 @@ function ending2(){
 		      Scoreboard:
 		     Rounds: 1 and 2
 
-		1.  Red      Hippo .... 12
-		1.  Green  Hippo .... 13
-		1.  Yellow Hippo .... 12
-		4.  Blue    Hippo .... 3 (You)
+		1.  Red      Hippo .... 10
+		1.  Green  Hippo .... 10
+		1.  Yellow Hippo .... 10
+		4.  Blue    Hippo .... 10 (You)
 
 
 
